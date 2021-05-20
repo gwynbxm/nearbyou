@@ -23,7 +23,7 @@ This project was carried out as an FYP at Nanyang Technological University from 
 ### Background
 
 ### Technologies
-* Android Studio
+* Android Studio 4.1.2
 * FlutterFire
 * Flutter SDK 2.0.6
 * Axure RP 9
