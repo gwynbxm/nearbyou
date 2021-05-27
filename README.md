@@ -1,16 +1,35 @@
-# nearbyou
+# NEARBYOU
 
-A new Flutter project.
+<!-- Table of Contents -->
 
-## Getting Started
+<details open = "open">
+<summary> Table of Contents </summary>
+<ol>
+  <li><a href="#genereal-information">General Information</a></li>
+  <li><a href="#project-introduction">Project Introduction</a></li>
+  <li><a href="#background-info">Background
+  <li><a href="#technologies">Technologies</a></li>
+  <li><a href="#features">Features</a></li>
+  <li><a href="#screenshots">Prototypes</a></li>
+  <li><a href="#ux-studies">User Experience Studies</a></li>
+</ol>
+</details>
 
-This project is a starting point for a Flutter application.
+### General Information
+This project was carried out as an FYP at Nanyang Technological University from January 2021 to December 2021.
 
-A few resources to get you started if this is your first Flutter project:
+### Introduction
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+### Background
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Technologies
+* Android Studio 4.1.2
+* FlutterFire
+* Flutter SDK 2.0.6
+* Axure RP 9
+
+### Features
+
+### Prototypes
+
+### User Experience Studies
