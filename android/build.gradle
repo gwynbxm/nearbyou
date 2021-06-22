@@ -1,3 +1,9 @@
+/*
+ * Created by Gwyn Bong Xiao Min
+ * Copyright (c) 2021. All rights reserved.
+ * Last modified 2/6/21 3:02 PM
+ */
+
 buildscript {
     repositories {
         google()
@@ -6,6 +12,7 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:4.1.0'
+        classpath 'com.google.gms:google-services:4.3.8'
     }
 }
 
