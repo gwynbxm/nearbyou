@@ -1,7 +1,7 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 2/6/21 3:24 PM
+ * Last modified 29/6/21 11:42 AM
  */
 
 import 'package:flutter/material.dart';
@@ -18,14 +18,14 @@ class PlacesSearch extends SearchDelegate<Suggestions> {
 
   @override
   List<Widget> buildActions(BuildContext context) {
-    return null;
-    //   [
-    //   IconButton(
-    //     tooltip: 'Clear',
-    //     icon: Icon(Icons.clear),
-    //     onPressed: () => query = '',
-    //   ),
-    // ];
+    // return null;
+    return [
+      IconButton(
+        tooltip: 'Clear',
+        icon: Icon(Icons.clear),
+        onPressed: () => query = '',
+      ),
+    ];
   }
 
   @override
@@ -44,12 +44,11 @@ class PlacesSearch extends SearchDelegate<Suggestions> {
   @override
   Widget buildSuggestions(BuildContext context) {
     return FutureBuilder(
-      //calls api here
-      future: query == ""
+      future: query.isEmpty
           ? null
           : apiClient.fetchSuggestions(
               query, Localizations.localeOf(context).languageCode),
-      builder: (context, snapshot) => query == ''
+      builder: (context, snapshot) => query.isEmpty
           ? Container(
               padding: EdgeInsets.all(16.0),
               child: Text('hello'),

@@ -1,7 +1,7 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 21/6/21 11:23 AM
+ * Last modified 28/6/21 1:29 PM
  */
 
 import 'dart:convert';
@@ -29,6 +29,9 @@ class PlaceApiProvider {
     if (response.statusCode == 200) {
       final result = json.decode(response.body);
       if (result['status'] == 'OK') {
+        // List<Suggestions> suggestion =
+        //     result.map((result) => Suggestions.fromJson(result)).toList();
+        // return suggestion;
         return result['predictions']
             .map<Suggestions>(
                 (p) => Suggestions(p['place_id'], p['description']))

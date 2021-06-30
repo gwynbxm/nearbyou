@@ -1,23 +1,29 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 2/6/21 3:22 PM
+ * Last modified 29/6/21 11:41 AM
  */
 
 import 'dart:async';
 import 'dart:collection';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
-// import 'package:geocoder/geocoder.dart';
+import 'package:geocoder/geocoder.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
-import 'package:nearbyou/utilities/services/database_services/authentication.dart';
+import 'package:nearbyou/utilities/services/firebase_services/authentication.dart';
 import 'package:nearbyou/utilities/services/api_services/place_services.dart';
+import 'package:nearbyou/utilities/ui/components/panel_widget.dart';
+import 'package:nearbyou/utilities/ui/components/rounded_icon_button.dart';
+import 'package:nearbyou/utilities/ui/palette.dart';
 import 'package:nearbyou/views/home/components/address_search.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:uuid/uuid.dart';
 
 // class HomeView extends StatelessWidget {
@@ -45,10 +51,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  User cUser;
+  final panelController = PanelController();
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   FloatingSearchBarController searchBarCon = FloatingSearchBarController();
+  // final _searchCon = TextEditingController();
 
   // Position currPosition;
   var geoLocator = Geolocator();
@@ -64,17 +71,29 @@ class _HomeScreenState extends State<HomeScreen> {
     // TODO: implement initState
     super.initState();
 
-    getCurrentUser();
+    // getCurrentUser();
     locatePosition();
+    getCurrentUser();
   }
 
-  void getCurrentUser() {
-    User currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser != null) {
-      setState(() {
-        cUser = currentUser;
-      });
-    }
+  // User cUser;
+  // void getCurrentUser() {
+  //   User currentUser = FirebaseAuth.instance.currentUser;
+  //   if (currentUser != null) {
+  //     setState(() {
+  //       cUser = currentUser;
+  //     });
+  //   }
+  // }
+
+  SharedPreferences sharedPreferences;
+  String displayEmail;
+
+  getCurrentUser() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    setState(() {
+      displayEmail = sharedPreferences.getString('email');
+    });
   }
 
   //create map
@@ -127,16 +146,49 @@ class _HomeScreenState extends State<HomeScreen> {
           body: Stack(
             children: [
               buildGoogleMap(),
+              // TextField(
+              //   controller: _searchCon,
+              //   readOnly: true,
+              //   onTap: () async {
+              //     // generate a new token here
+              //     final sessionToken = Uuid().v4();
+              //     final Suggestions result = await showSearch(
+              //       context: context,
+              //       delegate: PlacesSearch(sessionToken),
+              //     );
+              //     // This will change the text displayed in the TextField
+              //     if (result != null) {
+              //       setState(() {
+              //         _searchCon.text = result.placeDesc;
+              //       });
+              //     }
+              //   },
+              //   decoration: InputDecoration(
+              //     icon: Container(
+              //       margin: EdgeInsets.only(left: 20),
+              //       width: 10,
+              //       height: 10,
+              //       child: Icon(
+              //         Icons.search,
+              //         color: Colors.black,
+              //       ),
+              //     ),
+              //     hintText: "Search ....",
+              //     border: InputBorder.none,
+              //     contentPadding: EdgeInsets.only(left: 8.0, top: 16.0),
+              //   ),
+              // ),
+
               FloatingSearchBar(
                 hint: 'Search here',
                 controller: searchBarCon,
                 // width: 300,
                 onFocusChanged: (query) async {
-                  // final sessionToken = Uuid().v4();
-                  // final Suggestions result = (await showSearch(
-                  //   context: context,
-                  //   delegate: PlacesSearch(sessionToken),
-                  // ))!;
+                  final sessionToken = Uuid().v4();
+                  final Suggestions result = (await showSearch(
+                    context: context,
+                    delegate: PlacesSearch(sessionToken),
+                  ));
                   // final placeDetails = await PlaceApiProvider(sessionToken)
                   //     .getPlaceDetailFromId(result.placeId);
                   // setState(() {});
@@ -179,6 +231,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
               ),
+              SlidingUpPanel(
+                controller: panelController,
+                parallaxEnabled: true,
+                parallaxOffset: .5,
+                panelBuilder: (controller) => PanelWidget(
+                    controller: controller,
+                    panelController: panelController,
+                    child: RoundedIconButton(
+                      onPressed: () {},
+                      icon: Icons.add_location_alt,
+                    )),
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(18),
+                ),
+              ),
             ],
           )),
     );
@@ -213,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 backgroundColor: Colors.white,
               ),
               accountName: (Text('Gwyn')),
-              accountEmail: Text(cUser.email),
+              accountEmail: Text(displayEmail),
               arrowColor: Colors.white,
               onDetailsPressed: () {},
               decoration: BoxDecoration(
@@ -269,6 +336,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icons.logout,
                 text: 'Log Out',
                 onTap: () async {
+                  sharedPreferences.remove('email');
+                  sharedPreferences.setBool('login', true);
                   await Auth().signOut();
                   Navigator.popAndPushNamed(context, '/login');
                 }),
@@ -296,6 +365,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     // TODO: implement dispose
+    // _searchCon.dispose();
     searchBarCon.dispose();
     super.dispose();
   }

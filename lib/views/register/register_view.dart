@@ -1,13 +1,13 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 28/5/21 12:59 PM
+ * Last modified 22/6/21 6:19 PM
  */
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nearbyou/utilities/helper/validator.dart';
-import 'package:nearbyou/utilities/services/database_services/authentication.dart';
+import 'package:nearbyou/utilities/services/firebase_services/authentication.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_input_field.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_pwd_field.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';

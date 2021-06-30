@@ -1,12 +1,15 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 2/6/21 3:41 PM
+ * Last modified 22/6/21 6:19 PM
  */
 
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:nearbyou/views/home/home_view.dart';
+import 'package:nearbyou/views/login/login_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashView extends StatefulWidget {
   // const SplashView({Key key}) : super(key: key);
@@ -16,6 +19,9 @@ class SplashView extends StatefulWidget {
 }
 
 class _SplashViewState extends State<SplashView> {
+  SharedPreferences sharedPreferences;
+  bool newUser;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -23,7 +29,7 @@ class _SplashViewState extends State<SplashView> {
 
     Timer(
       Duration(seconds: 3),
-      () => Navigator.pushNamed(context, '/login'),
+      () => checkIfSignedIn(),
       //   Navigator.pushReplacement(
       // context,
       // MaterialPageRoute(
@@ -31,6 +37,19 @@ class _SplashViewState extends State<SplashView> {
       // ),
       // ),
     );
+  }
+
+  void checkIfSignedIn() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    newUser = (sharedPreferences.getBool('login') ?? true);
+
+    if (newUser == false) {
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => HomeScreen()));
+    } else {
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => LoginView()));
+    }
   }
 
   @override
