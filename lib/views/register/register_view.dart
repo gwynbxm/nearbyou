@@ -150,22 +150,6 @@ class _RegisterAccState extends State<RegisterAcc> {
                           validator: (value) => Validator.validateCfmPassword(
                               _pwdCon.text, _cfmPwdCon.text),
                         ),
-                        // Container(
-                        //   margin: EdgeInsets.symmetric(vertical: 10),
-                        //   width: size.width * 0.8,
-                        //   child: ClipRRect(
-                        //     borderRadius: BorderRadius.circular(29),
-                        //     child: ElevatedButton(
-                        //       onPressed: validateRegister,
-                        //       child: Text('REGISTER'),
-                        //       style: ElevatedButton.styleFrom(
-                        //         primary: primaryColor,
-                        //         padding: EdgeInsets.symmetric(
-                        //             vertical: 20, horizontal: 40),
-                        //       ),
-                        //     ),
-                        //   ),
-                        // ),
 
                         RoundedButton(
                           onPressed: () => validateRegister(),

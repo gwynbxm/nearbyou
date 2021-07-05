@@ -133,22 +133,6 @@ class _LoginAuthState extends State<LoginAuth> {
                         SizedBox(
                           height: 15.0,
                         ),
-                        // Container(
-                        //   margin: EdgeInsets.symmetric(vertical: 10),
-                        //   width: size.width * 0.8,
-                        //   child: ClipRRect(
-                        //     borderRadius: BorderRadius.circular(29),
-                        //     child: ElevatedButton(
-                        //       onPressed: validateLogin,
-                        //       child: Text('LOGIN'),
-                        //       style: ElevatedButton.styleFrom(
-                        //         primary: primaryColor,
-                        //         padding: EdgeInsets.symmetric(
-                        //             vertical: 20, horizontal: 40),
-                        //       ),
-                        //     ),
-                        //   ),
-                        // ),
 
                         RoundedButton(
                           onPressed: () => validateLogin(),
