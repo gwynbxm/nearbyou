@@ -44,11 +44,9 @@ class _HomeScreenState extends State<HomeScreen> {
   FloatingSearchBarController searchBarCon = FloatingSearchBarController();
   final _searchCon = TextEditingController();
 
-  // Position currPosition;
   var geoLocator = Geolocator();
   GoogleMapController googleMapController;
 
-  // Completer<GoogleMapController> _gMapCon = Completer();
   static const LatLng _center = const LatLng(1.3649170, 103.8228720);
   LatLng _lastMapPosition = _center;
   Set<Marker> _markers = HashSet<Marker>();
@@ -83,12 +81,8 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  //create map
   void _onMapCreated(GoogleMapController controller) {
     googleMapController = controller;
-    // _gMapCon.complete(controller);
-    // _onAddMarker();
-    // locatePosition();
   }
 
   void _onCameraMove(CameraPosition position) {
@@ -109,8 +103,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void locatePosition() async {
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-
-    // currPosition = position;
 
     LatLng latLngPosition = LatLng(position.latitude, position.longitude);
 
@@ -156,13 +148,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           controller: _searchCon,
                           readOnly: true,
                           onTap: () async {
-                            // generate a new token here
                             final sessionToken = Uuid().v4();
                             final Suggestions result = await showSearch(
                               context: context,
                               delegate: PlacesSearch(sessionToken),
                             );
-                            // This will change the text displayed in the TextField
                             if (result != null) {
                               setState(() {
                                 _searchCon.text = result.placeDesc;
@@ -189,91 +179,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              // TextField(
-              //   controller: _searchCon,
-              //   readOnly: true,
-              //   onTap: () async {
-              //     // generate a new token here
-              //     final sessionToken = Uuid().v4();
-              //     final Suggestions result = await showSearch(
-              //       context: context,
-              //       delegate: PlacesSearch(sessionToken),
-              //     );
-              //     // This will change the text displayed in the TextField
-              //     if (result != null) {
-              //       setState(() {
-              //         _searchCon.text = result.placeDesc;
-              //       });
-              //     }
-              //   },
-              //   decoration: InputDecoration(
-              //     icon: Container(
-              //       margin: EdgeInsets.only(left: 20),
-              //       width: 10,
-              //       height: 10,
-              //       child: Icon(
-              //         Icons.search,
-              //         color: Colors.black,
-              //       ),
-              //     ),
-              //     hintText: "Search ....",
-              //     border: InputBorder.none,
-              //     contentPadding: EdgeInsets.only(left: 8.0, top: 16.0),
-              //   ),
-              // ),
-
-              // FloatingSearchBar(
-              //   hint: 'Search here',
-              //   controller: searchBarCon,
-              //   // width: 300,
-              //   onFocusChanged: (query) async {
-              //     final sessionToken = Uuid().v4();
-              //     final Suggestions result = (await showSearch(
-              //       context: context,
-              //       delegate: PlacesSearch(sessionToken),
-              //     ));
-              //     // final placeDetails = await PlaceApiProvider(sessionToken)
-              //     //     .getPlaceDetailFromId(result.placeId);
-              //     // setState(() {});
-              //   },
-              //   onQueryChanged: (query) async {},
-              //   transition: CircularFloatingSearchBarTransition(),
-              //   actions: [
-              //     FloatingSearchBarAction(
-              //       showIfOpened: false,
-              //       child: CircularButton(
-              //         icon: const Icon(Icons.search),
-              //         onPressed: () {},
-              //       ),
-              //     ),
-              //     FloatingSearchBarAction.searchToClear(
-              //       showIfClosed: false,
-              //     ),
-              //     IconButton(
-              //       icon: Icon(Icons.chat),
-              //       color: Colors.blueAccent,
-              //       onPressed: () {},
-              //     ),
-              //   ],
-              //   builder: (context, transition) {
-              //     return ClipRRect(
-              //       borderRadius: BorderRadius.circular(8),
-              //       child: Material(
-              //         color: Colors.white,
-              //         child: Container(
-              //           child: Column(
-              //             children: [
-              //               ListTile(
-              //                 title: Text('Name of Place'),
-              //                 subtitle: Text('Place address'),
-              //               )
-              //             ],
-              //           ),
-              //         ),
-              //       ),
-              //     );
-              //   },
-              // ),
               SlidingUpPanel(
                 controller: panelController,
                 minHeight: panelHeightClosed,
@@ -284,10 +189,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   controller: controller,
                   panelController: panelController,
                   // child: ,
-                  // RoundedIconButton(
-                  //   onPressed: () {},
-                  //   icon: Icons.add_location_alt,
-                  // ),
                 ),
                 borderRadius: BorderRadius.vertical(
                   top: Radius.circular(18),
@@ -353,10 +254,6 @@ class _HomeScreenState extends State<HomeScreen> {
             DrawerItem(
               icon: Icons.star_border_outlined,
               text: 'My Shortcuts',
-              // pushReplacementNamed will replace current route of navigator
-              // that tightly encloses the given context by pushing the given
-              // route and then disposing previous route once the new route
-              // finishes animating in
               onTap: () => Navigator.pushReplacementNamed(context, '/shortcut'),
             ),
             DrawerItem(
@@ -393,10 +290,10 @@ class _HomeScreenState extends State<HomeScreen> {
               indent: 20,
               endIndent: 20,
             ),
-            // DrawerItem(
-            //   icon: Icons.info_outline,
-            //   text: 'About Nearbyou',
-            // ),
+            DrawerItem(
+              icon: Icons.info_outline,
+              text: 'About Nearbyou',
+            ),
             DrawerItem(
                 icon: Icons.logout,
                 text: 'Log Out',
@@ -411,21 +308,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
-  // Widget _drawerItem({IconData icon, String text, GestureTapCallback onTap}) {
-  //   return ListTile(
-  //     title: Row(
-  //       children: [
-  //         Icon(icon),
-  //         Padding(
-  //           padding: EdgeInsets.only(left: 8.0),
-  //           child: Text(text),
-  //         )
-  //       ],
-  //     ),
-  //     onTap: onTap,
-  //   );
-  // }
 
   @override
   void dispose() {

@@ -10,7 +10,7 @@ import 'package:nearbyou/utilities/ui/palette.dart';
 // decoration for round buttons
 class RoundedButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final GestureTapCallback onPressed;
   final Color color, textColor;
 
   const RoundedButton({

@@ -8,7 +8,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart';
-import 'package:nearbyou/models/places_model.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
 
 class PlaceApiProvider {
@@ -29,9 +28,6 @@ class PlaceApiProvider {
     if (response.statusCode == 200) {
       final result = json.decode(response.body);
       if (result['status'] == 'OK') {
-        // List<Suggestions> suggestion =
-        //     result.map((result) => Suggestions.fromJson(result)).toList();
-        // return suggestion;
         return result['predictions']
             .map<Suggestions>(
                 (p) => Suggestions(p['place_id'], p['description']))

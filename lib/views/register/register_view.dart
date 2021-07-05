@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nearbyou/utilities/helper/validator.dart';
 import 'package:nearbyou/utilities/services/firebase_services/authentication.dart';
+import 'package:nearbyou/utilities/ui/components/rounded_button.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_input_field.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_pwd_field.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
@@ -149,21 +150,26 @@ class _RegisterAccState extends State<RegisterAcc> {
                           validator: (value) => Validator.validateCfmPassword(
                               _pwdCon.text, _cfmPwdCon.text),
                         ),
-                        Container(
-                          margin: EdgeInsets.symmetric(vertical: 10),
-                          width: size.width * 0.8,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(29),
-                            child: ElevatedButton(
-                              onPressed: validateRegister,
-                              child: Text('REGISTER'),
-                              style: ElevatedButton.styleFrom(
-                                primary: primaryColor,
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 20, horizontal: 40),
-                              ),
-                            ),
-                          ),
+                        // Container(
+                        //   margin: EdgeInsets.symmetric(vertical: 10),
+                        //   width: size.width * 0.8,
+                        //   child: ClipRRect(
+                        //     borderRadius: BorderRadius.circular(29),
+                        //     child: ElevatedButton(
+                        //       onPressed: validateRegister,
+                        //       child: Text('REGISTER'),
+                        //       style: ElevatedButton.styleFrom(
+                        //         primary: primaryColor,
+                        //         padding: EdgeInsets.symmetric(
+                        //             vertical: 20, horizontal: 40),
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
+
+                        RoundedButton(
+                          onPressed: () => validateRegister(),
+                          text: "SIGN UP",
                         ),
                         SizedBox(height: 15.0),
                         // CheckSignInOrSignUp(
