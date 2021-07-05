@@ -26,22 +26,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:uuid/uuid.dart';
 
-// class HomeView extends StatelessWidget {
-//   const HomeView({Key key}) : super(key: key);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//         debugShowCheckedModeBanner: false,
-//         home: Scaffold(
-//           // appBar: AppBar(
-//           //   title: Text('Home'),
-//           //   backgroundColor: Colors.red,
-//           // ),
-//           body: HomeScreen(),
-//         ));
-//   }
-// }
+import 'components/drawer_item.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key key}) : super(key: key);
@@ -52,10 +37,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final panelController = PanelController();
+  static const double fabHeightClosed = 116.0;
+  double fabHeight = fabHeightClosed;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   FloatingSearchBarController searchBarCon = FloatingSearchBarController();
-  // final _searchCon = TextEditingController();
+  final _searchCon = TextEditingController();
 
   // Position currPosition;
   var geoLocator = Geolocator();
@@ -138,6 +125,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final panelHeightOpen = MediaQuery.of(context).size.height * 0.5;
+    final panelHeightClosed = MediaQuery.of(context).size.height * 0.1;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
@@ -146,6 +135,60 @@ class _HomeScreenState extends State<HomeScreen> {
           body: Stack(
             children: [
               buildGoogleMap(),
+              SafeArea(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(29),
+                  ),
+                  margin: EdgeInsets.only(left: 20, top: 10, right: 20),
+                  child: Row(
+                    children: [
+                      IconButton(
+                          padding: EdgeInsets.only(left: 15),
+                          color: Colors.black,
+                          icon: Icon(Icons.menu),
+                          onPressed: () =>
+                              _scaffoldKey.currentState.openDrawer()),
+                      Expanded(
+                        child: TextField(
+                          keyboardType: TextInputType.text,
+                          controller: _searchCon,
+                          readOnly: true,
+                          onTap: () async {
+                            // generate a new token here
+                            final sessionToken = Uuid().v4();
+                            final Suggestions result = await showSearch(
+                              context: context,
+                              delegate: PlacesSearch(sessionToken),
+                            );
+                            // This will change the text displayed in the TextField
+                            if (result != null) {
+                              setState(() {
+                                _searchCon.text = result.placeDesc;
+                              });
+                            }
+                          },
+                          decoration: InputDecoration(
+                            hintText: "Search ....",
+                            border: InputBorder.none,
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 15),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(right: 8),
+                        child: IconButton(
+                          icon: Icon(Icons.chat_outlined),
+                          color: Colors.black,
+                          onPressed: () {},
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
               // TextField(
               //   controller: _searchCon,
               //   readOnly: true,
@@ -179,71 +222,88 @@ class _HomeScreenState extends State<HomeScreen> {
               //   ),
               // ),
 
-              FloatingSearchBar(
-                hint: 'Search here',
-                controller: searchBarCon,
-                // width: 300,
-                onFocusChanged: (query) async {
-                  final sessionToken = Uuid().v4();
-                  final Suggestions result = (await showSearch(
-                    context: context,
-                    delegate: PlacesSearch(sessionToken),
-                  ));
-                  // final placeDetails = await PlaceApiProvider(sessionToken)
-                  //     .getPlaceDetailFromId(result.placeId);
-                  // setState(() {});
-                },
-                onQueryChanged: (query) async {},
-                transition: CircularFloatingSearchBarTransition(),
-                actions: [
-                  FloatingSearchBarAction(
-                    showIfOpened: false,
-                    child: CircularButton(
-                      icon: const Icon(Icons.search),
-                      onPressed: () {},
-                    ),
-                  ),
-                  FloatingSearchBarAction.searchToClear(
-                    showIfClosed: false,
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.chat),
-                    color: Colors.blueAccent,
-                    onPressed: () {},
-                  ),
-                ],
-                builder: (context, transition) {
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Material(
-                      color: Colors.white,
-                      child: Container(
-                        child: Column(
-                          children: [
-                            ListTile(
-                              title: Text('Name of Place'),
-                              subtitle: Text('Place address'),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+              // FloatingSearchBar(
+              //   hint: 'Search here',
+              //   controller: searchBarCon,
+              //   // width: 300,
+              //   onFocusChanged: (query) async {
+              //     final sessionToken = Uuid().v4();
+              //     final Suggestions result = (await showSearch(
+              //       context: context,
+              //       delegate: PlacesSearch(sessionToken),
+              //     ));
+              //     // final placeDetails = await PlaceApiProvider(sessionToken)
+              //     //     .getPlaceDetailFromId(result.placeId);
+              //     // setState(() {});
+              //   },
+              //   onQueryChanged: (query) async {},
+              //   transition: CircularFloatingSearchBarTransition(),
+              //   actions: [
+              //     FloatingSearchBarAction(
+              //       showIfOpened: false,
+              //       child: CircularButton(
+              //         icon: const Icon(Icons.search),
+              //         onPressed: () {},
+              //       ),
+              //     ),
+              //     FloatingSearchBarAction.searchToClear(
+              //       showIfClosed: false,
+              //     ),
+              //     IconButton(
+              //       icon: Icon(Icons.chat),
+              //       color: Colors.blueAccent,
+              //       onPressed: () {},
+              //     ),
+              //   ],
+              //   builder: (context, transition) {
+              //     return ClipRRect(
+              //       borderRadius: BorderRadius.circular(8),
+              //       child: Material(
+              //         color: Colors.white,
+              //         child: Container(
+              //           child: Column(
+              //             children: [
+              //               ListTile(
+              //                 title: Text('Name of Place'),
+              //                 subtitle: Text('Place address'),
+              //               )
+              //             ],
+              //           ),
+              //         ),
+              //       ),
+              //     );
+              //   },
+              // ),
               SlidingUpPanel(
                 controller: panelController,
+                minHeight: panelHeightClosed,
+                maxHeight: panelHeightOpen,
                 parallaxEnabled: true,
                 parallaxOffset: .5,
                 panelBuilder: (controller) => PanelWidget(
-                    controller: controller,
-                    panelController: panelController,
-                    child: RoundedIconButton(
-                      onPressed: () {},
-                      icon: Icons.add_location_alt,
-                    )),
+                  controller: controller,
+                  panelController: panelController,
+                  // child: ,
+                  // RoundedIconButton(
+                  //   onPressed: () {},
+                  //   icon: Icons.add_location_alt,
+                  // ),
+                ),
                 borderRadius: BorderRadius.vertical(
                   top: Radius.circular(18),
+                ),
+                onPanelSlide: (position) => setState(() {
+                  final panelMaxScrollExtent =
+                      panelHeightOpen - panelHeightClosed;
+                  fabHeight = position * panelMaxScrollExtent + fabHeightClosed;
+                }),
+              ),
+              Positioned(
+                right: 20,
+                bottom: fabHeight,
+                child: RoundedIconButton(
+                  onPressed: () {},
+                  icon: Icons.add_location_alt,
                 ),
               ),
             ],
@@ -255,7 +315,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return GoogleMap(
       onMapCreated: _onMapCreated,
       myLocationButtonEnabled: true,
-      myLocationEnabled: true, // shows user location
+      myLocationEnabled: true,
+      // shows user location
       zoomGesturesEnabled: true,
       zoomControlsEnabled: true,
       mapToolbarEnabled: false,
@@ -263,8 +324,8 @@ class _HomeScreenState extends State<HomeScreen> {
         target: _center,
         zoom: 11.0,
       ),
-      mapType:
-          MapType.normal, // google map type: satellite/hybrid/normal/terrain
+      mapType: MapType.normal,
+      // google map type: satellite/hybrid/normal/terrain
       markers: _markers,
       onCameraMove: _onCameraMove,
     );
@@ -284,12 +345,12 @@ class _HomeScreenState extends State<HomeScreen> {
               arrowColor: Colors.white,
               onDetailsPressed: () {},
               decoration: BoxDecoration(
-                  color: Colors.blue[300],
+                  color: bgColor,
                   borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(20),
                       bottomRight: Radius.circular(20))),
             ),
-            _drawerItem(
+            DrawerItem(
               icon: Icons.star_border_outlined,
               text: 'My Shortcuts',
               // pushReplacementNamed will replace current route of navigator
@@ -298,12 +359,12 @@ class _HomeScreenState extends State<HomeScreen> {
               // finishes animating in
               onTap: () => Navigator.pushReplacementNamed(context, '/shortcut'),
             ),
-            _drawerItem(
+            DrawerItem(
               icon: Icons.people_alt_outlined,
               text: 'Friends',
               onTap: () => Navigator.pushReplacementNamed(context, '/friends'),
             ),
-            _drawerItem(
+            DrawerItem(
               icon: Icons.bookmark_border_outlined,
               text: 'Saved Collections',
               onTap: () =>
@@ -311,28 +372,32 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             Divider(
               height: 20,
-              thickness: 2,
+              thickness: 1,
               indent: 20,
               endIndent: 20,
             ),
-            _drawerItem(
-              icon: Icons.settings_outlined,
-              text: 'Settings',
-              onTap: () => Navigator.pushReplacementNamed(context, '/settings'),
-            ),
-            _drawerItem(
+            DrawerItem(
               icon: Icons.add_alert_outlined,
               text: 'Notifications',
               onTap: () =>
                   Navigator.pushReplacementNamed(context, '/notifications'),
             ),
+            DrawerItem(
+              icon: Icons.settings_outlined,
+              text: 'Settings',
+              onTap: () => Navigator.pushReplacementNamed(context, '/settings'),
+            ),
             Divider(
               height: 20,
-              thickness: 2,
+              thickness: 1,
               indent: 20,
               endIndent: 20,
             ),
-            _drawerItem(
+            // DrawerItem(
+            //   icon: Icons.info_outline,
+            //   text: 'About Nearbyou',
+            // ),
+            DrawerItem(
                 icon: Icons.logout,
                 text: 'Log Out',
                 onTap: () async {
@@ -347,20 +412,20 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _drawerItem({IconData icon, String text, GestureTapCallback onTap}) {
-    return ListTile(
-      title: Row(
-        children: [
-          Icon(icon),
-          Padding(
-            padding: EdgeInsets.only(left: 8.0),
-            child: Text(text),
-          )
-        ],
-      ),
-      onTap: onTap,
-    );
-  }
+  // Widget _drawerItem({IconData icon, String text, GestureTapCallback onTap}) {
+  //   return ListTile(
+  //     title: Row(
+  //       children: [
+  //         Icon(icon),
+  //         Padding(
+  //           padding: EdgeInsets.only(left: 8.0),
+  //           child: Text(text),
+  //         )
+  //       ],
+  //     ),
+  //     onTap: onTap,
+  //   );
+  // }
 
   @override
   void dispose() {

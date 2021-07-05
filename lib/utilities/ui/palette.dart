@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 // logo color scheme
 const primaryColor = Color(0xFFE6873C);
 const iconColor = Color(0xFF3D8E95);
-const textColor = Color(0xFF225675);
+const bgColor = Color(0xFF225675);
 
 //analogous
 const color1 = Color(0xFFa3be3f);
@@ -34,6 +34,17 @@ const textLightestColor = Color(0xFF9cc8e2);
 const textLightColor = Color(0xFF3991c5);
 const textDarkColor = Color(0xFF1c4862);
 
+//scheme 1
+const colorS1C1 = Color(0xFFE0A577);
+const colorS1C2 = Color(0xFF4F989E);
+
+//scheme 2
+const colorS2C1 = Color(0xFFC7651A);
+const colorS2C2 = Color(0xFF18484D);
+
+//scheme 3
+const colorS3C1 = Color(0xFFC7671E);
+const colorS3C2 = Color(0xFF594234);
 //header
 //subtitle
 //button
