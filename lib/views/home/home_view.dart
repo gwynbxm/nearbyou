@@ -16,12 +16,13 @@ import 'package:geolocator/geolocator.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
-import 'package:nearbyou/utilities/services/firebase_services/authentication.dart';
+import 'package:nearbyou/utilities/services/database_services/authentication.dart';
 import 'package:nearbyou/utilities/services/api_services/place_services.dart';
 import 'package:nearbyou/utilities/ui/components/panel_widget.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_icon_button.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
 import 'package:nearbyou/views/home/components/address_search.dart';
+import 'package:nearbyou/views/profile/user_profile_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:uuid/uuid.dart';
@@ -252,14 +253,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       bottomRight: Radius.circular(20))),
             ),
             DrawerItem(
+              icon: Icons.person_outline_outlined,
+              text: 'Profile',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfileView()),
+              ),
+            ),
+            DrawerItem(
               icon: Icons.star_border_outlined,
               text: 'My Shortcuts',
               onTap: () => Navigator.pushReplacementNamed(context, '/shortcut'),
-            ),
-            DrawerItem(
-              icon: Icons.people_alt_outlined,
-              text: 'Friends',
-              onTap: () => Navigator.pushReplacementNamed(context, '/friends'),
             ),
             DrawerItem(
               icon: Icons.bookmark_border_outlined,
