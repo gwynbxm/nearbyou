@@ -118,98 +118,98 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final panelHeightOpen = MediaQuery.of(context).size.height * 0.5;
+    final panelHeightOpen = MediaQuery.of(context).size.height * 0.6;
     final panelHeightClosed = MediaQuery.of(context).size.height * 0.1;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-          key: _scaffoldKey,
-          drawer: buildDrawer(context),
-          body: Stack(
-            children: [
-              buildGoogleMap(),
-              SafeArea(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(29),
-                  ),
-                  margin: EdgeInsets.only(left: 20, top: 10, right: 20),
-                  child: Row(
-                    children: [
-                      IconButton(
-                          padding: EdgeInsets.only(left: 15),
-                          color: Colors.black,
-                          icon: Icon(Icons.menu),
-                          onPressed: () =>
-                              _scaffoldKey.currentState.openDrawer()),
-                      Expanded(
-                        child: TextField(
-                          keyboardType: TextInputType.text,
-                          controller: _searchCon,
-                          readOnly: true,
-                          onTap: () async {
-                            final sessionToken = Uuid().v4();
-                            final Suggestions result = await showSearch(
-                              context: context,
-                              delegate: PlacesSearch(sessionToken),
-                            );
-                            if (result != null) {
-                              setState(() {
-                                _searchCon.text = result.placeDesc;
-                              });
-                            }
-                          },
-                          decoration: InputDecoration(
-                            hintText: "Search ....",
-                            border: InputBorder.none,
-                            contentPadding:
-                                EdgeInsets.symmetric(horizontal: 15),
-                          ),
+        key: _scaffoldKey,
+        drawer: buildDrawer(context),
+        body: Stack(
+          children: [
+            SlidingUpPanel(
+              body: buildGoogleMap(),
+              controller: panelController,
+              minHeight: panelHeightClosed,
+              maxHeight: panelHeightOpen,
+              parallaxEnabled: true,
+              parallaxOffset: .5,
+              panelBuilder: (controller) => PanelWidget(
+                controller: controller,
+                panelController: panelController,
+                // child: ,
+              ),
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(18),
+              ),
+              onPanelSlide: (position) => setState(() {
+                final panelMaxScrollExtent =
+                    panelHeightOpen - panelHeightClosed;
+                fabHeight = position * panelMaxScrollExtent + fabHeightClosed;
+              }),
+            ),
+            Positioned(
+              right: 20,
+              bottom: fabHeight,
+              child: RoundedIconButton(
+                onPressed: () {},
+                icon: Icons.add_location_alt,
+              ),
+            ),
+            SafeArea(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(29),
+                ),
+                margin: EdgeInsets.only(left: 20, top: 10, right: 20),
+                child: Row(
+                  children: [
+                    IconButton(
+                        padding: EdgeInsets.only(left: 15),
+                        color: Colors.black,
+                        icon: Icon(Icons.menu),
+                        onPressed: () =>
+                            _scaffoldKey.currentState.openDrawer()),
+                    Expanded(
+                      child: TextField(
+                        keyboardType: TextInputType.text,
+                        controller: _searchCon,
+                        readOnly: true,
+                        onTap: () async {
+                          final sessionToken = Uuid().v4();
+                          final Suggestions result = await showSearch(
+                            context: context,
+                            delegate: PlacesSearch(sessionToken),
+                          );
+                          if (result != null) {
+                            setState(() {
+                              _searchCon.text = result.placeDesc;
+                            });
+                          }
+                        },
+                        decoration: InputDecoration(
+                          hintText: "Search ....",
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(horizontal: 15),
                         ),
                       ),
-                      Padding(
-                        padding: EdgeInsets.only(right: 8),
-                        child: IconButton(
-                          icon: Icon(Icons.chat_outlined),
-                          color: Colors.black,
-                          onPressed: () {},
-                        ),
-                      )
-                    ],
-                  ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(right: 8),
+                      child: IconButton(
+                        icon: Icon(Icons.chat_outlined),
+                        color: Colors.black,
+                        onPressed: () {},
+                      ),
+                    )
+                  ],
                 ),
               ),
-              SlidingUpPanel(
-                controller: panelController,
-                minHeight: panelHeightClosed,
-                maxHeight: panelHeightOpen,
-                parallaxEnabled: true,
-                parallaxOffset: .5,
-                panelBuilder: (controller) => PanelWidget(
-                  controller: controller,
-                  panelController: panelController,
-                  // child: ,
-                ),
-                borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(18),
-                ),
-                onPanelSlide: (position) => setState(() {
-                  final panelMaxScrollExtent =
-                      panelHeightOpen - panelHeightClosed;
-                  fabHeight = position * panelMaxScrollExtent + fabHeightClosed;
-                }),
-              ),
-              Positioned(
-                right: 20,
-                bottom: fabHeight,
-                child: RoundedIconButton(
-                  onPressed: () {},
-                  icon: Icons.add_location_alt,
-                ),
-              ),
-            ],
-          )),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
