@@ -48,4 +48,4 @@ app.*.map.json
 
 lib/utilities/constants/api_key.dart
 lib/utilities/constants/strings.dart
-lib/utilities/services/place_services.dart
+lib/utilities/services/google_places.dart

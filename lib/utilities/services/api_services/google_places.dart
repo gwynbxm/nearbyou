@@ -9,6 +9,7 @@ import 'dart:io';
 
 import 'package:http/http.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
+import 'package:nearbyou/utilities/constants/api_key.dart';
 
 class PlaceApiProvider {
   final client = Client();
@@ -16,10 +17,9 @@ class PlaceApiProvider {
 
   final sessionToken;
 
-  static final String androidKey = '';
-  static final String iosKey = '';
-
-  final apiKey = Platform.isAndroid ? androidKey : iosKey;
+  final apiKey = Platform.isAndroid
+      ? SecretKey.ANDROID_MAPS_API_KEY
+      : SecretKey.IOS_MAPS_API_KEY;
 
   Future<List<Suggestions>> fetchSuggestions(String input, String lang) async {
     final request = '';

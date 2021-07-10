@@ -6,7 +6,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
-import 'package:nearbyou/utilities/services/api_services/place_services.dart';
+import 'package:nearbyou/utilities/services/api_services/google_places.dart';
 
 class PlacesSearch extends SearchDelegate<Suggestions> {
   PlacesSearch(this.sessionToken) {

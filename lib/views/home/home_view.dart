@@ -17,7 +17,7 @@ import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
 import 'package:nearbyou/utilities/services/database_services/authentication.dart';
-import 'package:nearbyou/utilities/services/api_services/place_services.dart';
+import 'package:nearbyou/utilities/services/api_services/google_places.dart';
 import 'package:nearbyou/utilities/ui/components/panel_widget.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_icon_button.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
