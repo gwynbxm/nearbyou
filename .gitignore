@@ -46,6 +46,5 @@ app.*.map.json
 /android/app/release
 /android/app/google-services.json
 
-lib/utilities/constants/api_key.dart
-lib/utilities/constants/strings.dart
+lib/utilities/constants
 lib/utilities/services/google_places.dart

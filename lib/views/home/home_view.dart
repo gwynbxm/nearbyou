@@ -16,11 +16,12 @@ import 'package:geolocator/geolocator.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
-import 'package:nearbyou/utilities/services/database_services/authentication.dart';
+import 'package:nearbyou/utilities/services/firebase_services/authentication.dart';
 import 'package:nearbyou/utilities/services/api_services/google_places.dart';
 import 'package:nearbyou/utilities/ui/components/panel_widget.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_icon_button.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
+import 'package:nearbyou/views/geopost/add_post_view.dart';
 import 'package:nearbyou/views/home/components/address_search.dart';
 import 'package:nearbyou/views/profile/user_profile_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -95,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
       Marker(
         markerId: MarkerId(_center.toString()),
         position: _center,
-        infoWindow: InfoWindow(title: 'Singapore', snippet: 'Little Red Dot'),
+        infoWindow: InfoWindow(title: 'Singapore', snippet: 'Hello'),
         icon: BitmapDescriptor.defaultMarker,
       ),
     );
@@ -116,10 +117,22 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _handleTap(LatLng point) {
+    setState(() {
+      _markers.add(
+        Marker(
+          markerId: MarkerId(point.toString()),
+          position: point,
+          infoWindow: InfoWindow(title: 'hi'),
+        ),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final panelHeightOpen = MediaQuery.of(context).size.height * 0.6;
-    final panelHeightClosed = MediaQuery.of(context).size.height * 0.1;
+    final panelHeightClosed = MediaQuery.of(context).size.height * 0.15;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
@@ -137,7 +150,22 @@ class _HomeScreenState extends State<HomeScreen> {
               panelBuilder: (controller) => PanelWidget(
                 controller: controller,
                 panelController: panelController,
-                // child: ,
+                child: Row(
+                  // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text(
+                      '>>>',
+                      // style: Theme.of(context).textTheme.headline1,
+                    ),
+                    RoundedIconButton(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => AddPostView()),
+                      ),
+                      icon: Icons.add_location_alt,
+                    ),
+                  ],
+                ),
               ),
               borderRadius: BorderRadius.vertical(
                 top: Radius.circular(18),
@@ -147,14 +175,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     panelHeightOpen - panelHeightClosed;
                 fabHeight = position * panelMaxScrollExtent + fabHeightClosed;
               }),
-            ),
-            Positioned(
-              right: 20,
-              bottom: fabHeight,
-              child: RoundedIconButton(
-                onPressed: () {},
-                icon: Icons.add_location_alt,
-              ),
             ),
             SafeArea(
               child: Container(
@@ -230,6 +250,8 @@ class _HomeScreenState extends State<HomeScreen> {
       // google map type: satellite/hybrid/normal/terrain
       markers: _markers,
       onCameraMove: _onCameraMove,
+      onTap: (latlang) =>
+          _markers.length >= 1 ? _markers.clear() : _handleTap(latlang),
     );
   }
 
@@ -260,11 +282,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 MaterialPageRoute(builder: (context) => ProfileView()),
               ),
             ),
-            DrawerItem(
-              icon: Icons.star_border_outlined,
-              text: 'My Shortcuts',
-              onTap: () => Navigator.pushReplacementNamed(context, '/shortcut'),
-            ),
+            // DrawerItem(
+            //   icon: Icons.star_border_outlined,
+            //   text: 'Feed',
+            //   onTap: () {},
+            // ),
             DrawerItem(
               icon: Icons.bookmark_border_outlined,
               text: 'Saved Collections',

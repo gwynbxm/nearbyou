@@ -7,7 +7,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:nearbyou/views/home/home_view.dart';
 import 'package:nearbyou/views/login/login_view.dart';
-import 'package:nearbyou/views/profile/profile_view.dart';
+import 'package:nearbyou/views/profile/user_profile_view.dart';
 import 'package:nearbyou/views/register/register_view.dart';
 import 'package:nearbyou/views/splash/splash_view.dart';
 
