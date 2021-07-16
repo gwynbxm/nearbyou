@@ -1,7 +1,7 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 22/6/21 6:19 PM
+ * Last modified 16/7/21 12:44 PM
  */
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -109,7 +109,8 @@ class _LoginAuthState extends State<LoginAuth> {
                       children: [
                         RoundedInputField(
                           controller: _emailCon,
-                          hintText: 'Email Address',
+                          hintText: "Email Address",
+                          labelText: "Email Address",
                           focusNode: _focusEmail,
                           onChanged: (value) {},
                           validator: (value) => Validator.validateEmail(value),
@@ -120,6 +121,7 @@ class _LoginAuthState extends State<LoginAuth> {
                           onChanged: (value) {},
                           focusNode: _focusPwd,
                           hintText: "Password",
+                          labelText: "Password",
                           suffixIcon: IconButton(
                             icon: Icon(_isHidden
                                 ? Icons.visibility

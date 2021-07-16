@@ -1,7 +1,7 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 22/6/21 6:19 PM
+ * Last modified 16/7/21 12:43 PM
  */
 import 'package:flutter/material.dart';
 import 'package:nearbyou/utilities/ui/components/text_field_container.dart';
@@ -16,6 +16,7 @@ class RoundedPasswordField extends StatelessWidget {
   final TextEditingController controller;
   final FormFieldValidator<String> validator;
   final String hintText;
+  final String labelText;
 
   const RoundedPasswordField({
     Key key,
@@ -26,6 +27,7 @@ class RoundedPasswordField extends StatelessWidget {
     this.controller,
     this.validator,
     this.hintText,
+    this.labelText,
   }) : super(key: key);
 
   @override
@@ -40,6 +42,7 @@ class RoundedPasswordField extends StatelessWidget {
         cursorColor: Colors.black,
         decoration: InputDecoration(
           hintText: hintText,
+          labelText: labelText,
           icon: Icon(
             Icons.lock_outline,
             color: primaryColor,

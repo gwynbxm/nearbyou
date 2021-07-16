@@ -1,7 +1,7 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 29/6/21 11:41 AM
+ * Last modified 16/7/21 3:51 PM
  */
 
 import 'dart:async';
@@ -10,6 +10,7 @@ import 'dart:collection';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -39,7 +40,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final panelController = PanelController();
-  static const double fabHeightClosed = 116.0;
+  static const double fabHeightClosed = 160.0;
   double fabHeight = fabHeightClosed;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -91,13 +92,13 @@ class _HomeScreenState extends State<HomeScreen> {
     _lastMapPosition = position.target;
   }
 
-  void _onAddMarker() {
+  void _onAddMarker(LatLng coordinates) {
     _markers.add(
       Marker(
         markerId: MarkerId(_center.toString()),
-        position: _center,
+        position: coordinates,
         infoWindow: InfoWindow(title: 'Singapore', snippet: 'Hello'),
-        icon: BitmapDescriptor.defaultMarker,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
       ),
     );
   }
@@ -106,12 +107,13 @@ class _HomeScreenState extends State<HomeScreen> {
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
 
-    LatLng latLngPosition = LatLng(position.latitude, position.longitude);
+    LatLng currLatLngPosition = LatLng(position.latitude, position.longitude);
 
     CameraPosition cameraPosition =
-        new CameraPosition(target: latLngPosition, zoom: 14);
+        new CameraPosition(target: currLatLngPosition, zoom: 14);
 
     setState(() {
+      _onAddMarker(currLatLngPosition);
       googleMapController
           .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
     });
@@ -119,15 +121,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _handleTap(LatLng point) {
     setState(() {
-      _markers.add(
-        Marker(
-          markerId: MarkerId(point.toString()),
-          position: point,
-          infoWindow: InfoWindow(title: 'hi'),
-        ),
-      );
+      _onAddMarker(point);
     });
   }
+
+  // _getAddress(LatLng coordinates) async {
+  //   try {
+  //     List<PlaceMark> p = await Geocoder.local.findAddressesFromCoordinates(
+  //         Coordinates(coordinates.latitude, coordinates.longitude));
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -151,18 +156,32 @@ class _HomeScreenState extends State<HomeScreen> {
                 controller: controller,
                 panelController: panelController,
                 child: Row(
-                  // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      '>>>',
-                      // style: Theme.of(context).textTheme.headline1,
-                    ),
-                    RoundedIconButton(
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => AddPostView()),
+                    Expanded(
+                      flex: 3,
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Text(
+                          'Create & share your very own shortcuts with Nearbyou! >>>',
+                          style: GoogleFonts.poppins(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: primaryDarkColor),
+                        ),
                       ),
-                      icon: Icons.add_location_alt,
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: RoundedIconButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => AddPostView()),
+                        ),
+                        icon: Icons.add_location_alt,
+                      ),
                     ),
                   ],
                 ),
@@ -175,6 +194,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     panelHeightOpen - panelHeightClosed;
                 fabHeight = position * panelMaxScrollExtent + fabHeightClosed;
               }),
+            ),
+            Positioned(
+              right: 20,
+              bottom: fabHeight,
+              child: RoundedIconButton(
+                onPressed: locatePosition,
+                icon: Icons.my_location,
+              ),
             ),
             SafeArea(
               child: Container(
@@ -236,11 +263,11 @@ class _HomeScreenState extends State<HomeScreen> {
   GoogleMap buildGoogleMap() {
     return GoogleMap(
       onMapCreated: _onMapCreated,
-      myLocationButtonEnabled: true,
-      myLocationEnabled: true,
+      myLocationButtonEnabled: false,
+      myLocationEnabled: false,
       // shows user location
       zoomGesturesEnabled: true,
-      zoomControlsEnabled: true,
+      zoomControlsEnabled: false,
       mapToolbarEnabled: false,
       initialCameraPosition: CameraPosition(
         target: _center,

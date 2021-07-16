@@ -1,7 +1,7 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 22/6/21 6:19 PM
+ * Last modified 16/7/21 12:45 PM
  */
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -105,7 +105,8 @@ class _RegisterAccState extends State<RegisterAcc> {
                         RoundedInputField(
                           controller: _usernameCon,
                           focusNode: _focusUsername,
-                          hintText: 'Username',
+                          hintText: "Username",
+                          labelText: "Username",
                           onChanged: (value) {},
                           validator: (value) =>
                               value.isEmpty ? 'Username cannot be blank' : null,
@@ -113,7 +114,8 @@ class _RegisterAccState extends State<RegisterAcc> {
                         RoundedInputField(
                           controller: _emailCon,
                           focusNode: _focusEmail,
-                          hintText: 'Email Address',
+                          hintText: "Email Address",
+                          labelText: "Email Address",
                           onChanged: (value) {},
                           validator: (value) =>
                               value.isEmpty ? 'Email cannot be blank' : null,
@@ -124,6 +126,7 @@ class _RegisterAccState extends State<RegisterAcc> {
                           onChanged: (value) {},
                           focusNode: _focusPwd,
                           hintText: "Password",
+                          labelText: "Password",
                           suffixIcon: IconButton(
                             icon: Icon(_isHidden
                                 ? Icons.visibility
@@ -140,6 +143,7 @@ class _RegisterAccState extends State<RegisterAcc> {
                           onChanged: (value) {},
                           focusNode: _focusCfmPwd,
                           hintText: "Confirm Password",
+                          labelText: "Confirm Password",
                           suffixIcon: IconButton(
                             icon: Icon(_isHidden
                                 ? Icons.visibility
