@@ -4,10 +4,30 @@
  * Last modified 5/7/21 11:46 AM
  */
 
-class UserAccount {
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class UserData {
+  final int id;
   final String username;
   final String email;
   final String profilePhoto;
 
-  UserAccount(this.username, this.email, this.profilePhoto);
+  UserData({this.id, this.username, this.email, this.profilePhoto});
+
+  factory UserData.fromMap(Map<String, dynamic> json) => new UserData(
+        id: json["id"],
+        username: json["username"],
+        email: json["emailAddress"],
+        profilePhoto: json["profilePhoto"],
+      );
+
+  Map<String, dynamic> toMap() => {
+        'username': username,
+        'emailAddress': email,
+        'profilePhoto': profilePhoto,
+      };
+
+  factory UserData.fromDocument(DocumentSnapshot snapshot) {
+    return UserData.fromMap(snapshot.data());
+  }
 }

@@ -23,7 +23,7 @@ import 'package:nearbyou/utilities/services/api_services/google_places.dart';
 import 'package:nearbyou/utilities/ui/components/panel_widget.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_icon_button.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
-import 'package:nearbyou/views/geopost/add_post_view.dart';
+import 'package:nearbyou/views/posting/add_post_view.dart';
 import 'package:nearbyou/views/home/components/address_search.dart';
 import 'package:nearbyou/views/profile/user_profile_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
