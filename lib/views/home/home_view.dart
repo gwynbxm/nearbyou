@@ -16,6 +16,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:geocoder/geocoder.dart';
+import 'package:nearbyou/models/places_model.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
 import 'package:nearbyou/utilities/services/firebase_services/authentication.dart';
 import 'package:nearbyou/utilities/services/api_services/google_places.dart';
@@ -125,14 +126,25 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // _getAddress(LatLng coordinates) async {
-  //   try {
-  //     List<PlaceMark> p = await Geocoder.local.findAddressesFromCoordinates(
-  //         Coordinates(coordinates.latitude, coordinates.longitude));
-  //   } catch (e) {
-  //     print(e);
-  //   }
-  // }
+  bool selectedLocation = false;
+  String _placeName = '';
+  String _placeAdd = '';
+
+  void _goToPlace(Places places) async {
+    var lat = places.geometry.locationData.lat;
+    var lng = places.geometry.locationData.lng;
+
+    LatLng coordinates = LatLng(lat, lng);
+
+    setState(() {
+      _onAddMarker(coordinates);
+      googleMapController.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(target: coordinates, zoom: 14.0),
+        ),
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -162,15 +174,36 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       flex: 3,
                       child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Text(
-                          'Create & share your very own shortcuts with Nearbyou! >>>',
-                          style: GoogleFonts.poppins(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: primaryDarkColor),
-                        ),
-                      ),
+                          padding: EdgeInsets.only(left: 30, right: 30),
+                          child: selectedLocation
+                              ? Column(
+                                  children: [
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        '$_placeName',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 24,
+                                        ),
+                                      ),
+                                    ),
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        '$_placeAdd',
+                                        style: TextStyle(fontSize: 15),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Text(
+                                  'Create & share your very own shortcuts with Nearbyou! >>>',
+                                  style: GoogleFonts.poppins(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: primaryDarkColor),
+                                )),
                     ),
                     Expanded(
                       flex: 1,
@@ -230,8 +263,17 @@ class _HomeScreenState extends State<HomeScreen> {
                             delegate: PlacesSearch(sessionToken),
                           );
                           if (result != null) {
+                            final placesDetails =
+                                await PlaceApiProvider(sessionToken)
+                                    .getPlacesDetails(result.placeId);
+
                             setState(() {
                               _searchCon.text = result.placeDesc;
+                              panelController.open();
+                              selectedLocation = true;
+                              _placeName = placesDetails.placeName;
+                              _placeAdd = placesDetails.placeAddress;
+                              _goToPlace(placesDetails);
                             });
                           }
                         },

@@ -1,10 +1,11 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 29/6/21 11:42 AM
+ * Last modified 10/7/21 11:25 AM
  */
 
 import 'package:flutter/material.dart';
+import 'package:nearbyou/models/places_model.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
 import 'package:nearbyou/utilities/services/api_services/google_places.dart';
 
@@ -51,15 +52,18 @@ class PlacesSearch extends SearchDelegate<Suggestions> {
       builder: (context, snapshot) => query.isEmpty
           ? Container(
               padding: EdgeInsets.all(16.0),
-              child: Text('hello'),
             )
           : snapshot.hasData
               ? ListView.builder(
                   itemBuilder: (context, index) => ListTile(
-                    //display data returned from our future
                     title:
+                        Text((snapshot.data[index] as Suggestions).placeName),
+                    subtitle:
                         Text((snapshot.data[index] as Suggestions).placeDesc),
                     onTap: () {
+                      String placeId =
+                          (snapshot.data[index] as Suggestions).placeId;
+                      apiClient.getPlacesDetails(placeId);
                       close(context, snapshot.data[index] as Suggestions);
                     },
                   ),
