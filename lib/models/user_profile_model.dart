@@ -5,29 +5,30 @@
  */
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 
-class UserData {
+class UserProfile {
   final int id;
   final String username;
-  final String email;
+  final String emailAddress;
   final String profilePhoto;
 
-  UserData({this.id, this.username, this.email, this.profilePhoto});
+  UserProfile({this.id, this.username, this.emailAddress, this.profilePhoto});
 
-  factory UserData.fromMap(Map<String, dynamic> json) => new UserData(
+  factory UserProfile.fromMap(Map<String, dynamic> json) => new UserProfile(
         id: json["id"],
+        emailAddress: json["email"],
         username: json["username"],
-        email: json["emailAddress"],
         profilePhoto: json["profilePhoto"],
       );
 
   Map<String, dynamic> toMap() => {
+        'email': emailAddress,
         'username': username,
-        'emailAddress': email,
         'profilePhoto': profilePhoto,
       };
 
-  factory UserData.fromDocument(DocumentSnapshot snapshot) {
-    return UserData.fromMap(snapshot.data());
+  factory UserProfile.fromDocument(DocumentSnapshot snapshot) {
+    return UserProfile.fromMap(snapshot.data());
   }
 }

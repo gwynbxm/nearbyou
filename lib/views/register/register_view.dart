@@ -6,8 +6,10 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:nearbyou/models/user_profile_model.dart';
 import 'package:nearbyou/utilities/helper/validator.dart';
 import 'package:nearbyou/utilities/services/firebase_services/authentication.dart';
+import 'package:nearbyou/utilities/services/firebase_services/firestore.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_button.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_input_field.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_pwd_field.dart';
@@ -62,6 +64,9 @@ class _RegisterAccState extends State<RegisterAcc> {
     if (form.validate()) {
       User user = await Auth().register(_emailCon.text, _pwdCon.text);
       if (user != null) {
+        UserProfile userProfile = UserProfile(
+            username: _usernameCon.text, emailAddress: _emailCon.text);
+        await DatabaseServices.addUser(user.uid, userProfile);
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => HomeScreen()),

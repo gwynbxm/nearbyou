@@ -56,6 +56,7 @@ class PlacesSearch extends SearchDelegate<Suggestions> {
           : snapshot.hasData
               ? ListView.builder(
                   itemBuilder: (context, index) => ListTile(
+                    //display data returned from our future
                     title:
                         Text((snapshot.data[index] as Suggestions).placeName),
                     subtitle:

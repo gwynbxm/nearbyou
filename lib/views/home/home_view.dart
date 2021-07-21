@@ -7,6 +7,7 @@
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -18,8 +19,10 @@ import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:nearbyou/models/places_model.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
+import 'package:nearbyou/models/user_profile_model.dart';
 import 'package:nearbyou/utilities/services/firebase_services/authentication.dart';
 import 'package:nearbyou/utilities/services/api_services/google_places.dart';
+import 'package:nearbyou/utilities/services/firebase_services/firestore.dart';
 import 'package:nearbyou/utilities/ui/components/panel_widget.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_icon_button.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
@@ -31,6 +34,8 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:uuid/uuid.dart';
 
 import 'components/drawer_item.dart';
+
+final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key key}) : super(key: key);
@@ -94,14 +99,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onAddMarker(LatLng coordinates) {
+    //always clear existing markers in order to add new marker
+    _markers.clear();
     _markers.add(
       Marker(
         markerId: MarkerId(_center.toString()),
         position: coordinates,
-        infoWindow: InfoWindow(title: 'Singapore', snippet: 'Hello'),
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
       ),
     );
+    selectedLocation = true;
   }
 
   void locatePosition() async {
@@ -144,6 +151,27 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     });
+  }
+
+  void _searchPlace() async {
+    final sessionToken = Uuid().v4();
+    final Suggestions result = await showSearch(
+      context: context,
+      delegate: PlacesSearch(sessionToken),
+    );
+    if (result != null) {
+      final placesDetails =
+          await PlaceApiProvider(sessionToken).getPlacesDetails(result.placeId);
+
+      setState(() {
+        _searchCon.text = result.placeDesc;
+        panelController.open();
+        selectedLocation = true;
+        _placeName = placesDetails.placeName;
+        _placeAdd = placesDetails.placeAddress;
+        _goToPlace(placesDetails);
+      });
+    }
   }
 
   @override
@@ -242,11 +270,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(29),
                 ),
-                margin: EdgeInsets.only(left: 20, top: 10, right: 20),
+                margin: EdgeInsets.all(16),
                 child: Row(
                   children: [
                     IconButton(
-                        padding: EdgeInsets.only(left: 15),
+                        padding: EdgeInsets.only(left: 10),
                         color: Colors.black,
                         icon: Icon(Icons.menu),
                         onPressed: () =>
@@ -256,38 +284,30 @@ class _HomeScreenState extends State<HomeScreen> {
                         keyboardType: TextInputType.text,
                         controller: _searchCon,
                         readOnly: true,
-                        onTap: () async {
-                          final sessionToken = Uuid().v4();
-                          final Suggestions result = await showSearch(
-                            context: context,
-                            delegate: PlacesSearch(sessionToken),
-                          );
-                          if (result != null) {
-                            final placesDetails =
-                                await PlaceApiProvider(sessionToken)
-                                    .getPlacesDetails(result.placeId);
-
-                            setState(() {
-                              _searchCon.text = result.placeDesc;
-                              panelController.open();
-                              selectedLocation = true;
-                              _placeName = placesDetails.placeName;
-                              _placeAdd = placesDetails.placeAddress;
-                              _goToPlace(placesDetails);
-                            });
-                          }
-                        },
+                        onTap: _searchPlace,
                         decoration: InputDecoration(
                           hintText: "Search ....",
+                          hintStyle: TextStyle(color: Colors.grey),
+                          suffixIcon: selectedLocation
+                              ? IconButton(
+                                  onPressed: () {
+                                    _searchCon.clear();
+                                    _markers.clear();
+                                    selectedLocation = false;
+                                    panelController.close();
+                                  },
+                                  icon: Icon(Icons.clear),
+                                )
+                              : null,
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 15),
+                          contentPadding: EdgeInsets.symmetric(vertical: 15),
                         ),
                       ),
                     ),
                     Padding(
                       padding: EdgeInsets.only(right: 8),
                       child: IconButton(
-                        icon: Icon(Icons.chat_outlined),
+                        icon: Icon(Icons.filter_alt_outlined),
                         color: Colors.black,
                         onPressed: () {},
                       ),
@@ -319,8 +339,7 @@ class _HomeScreenState extends State<HomeScreen> {
       // google map type: satellite/hybrid/normal/terrain
       markers: _markers,
       onCameraMove: _onCameraMove,
-      onTap: (latlang) =>
-          _markers.length >= 1 ? _markers.clear() : _handleTap(latlang),
+      onTap: _handleTap,
     );
   }
 
@@ -329,20 +348,47 @@ class _HomeScreenState extends State<HomeScreen> {
       child: SafeArea(
         child: ListView(
           children: [
-            UserAccountsDrawerHeader(
-              currentAccountPicture: CircleAvatar(
-                backgroundColor: Colors.white,
-              ),
-              accountName: (Text('Gwyn')),
-              accountEmail: Text(displayEmail),
-              arrowColor: Colors.white,
-              onDetailsPressed: () {},
-              decoration: BoxDecoration(
-                  color: bgColor,
-                  borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(20),
-                      bottomRight: Radius.circular(20))),
+            FutureBuilder(
+              future: DatabaseServices.getUser(_auth.currentUser.uid),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Container(
+                      alignment: FractionalOffset.center,
+                      child: CircularProgressIndicator());
+                }
+
+                UserProfile userProfile =
+                    UserProfile.fromDocument(snapshot.data);
+                return UserAccountsDrawerHeader(
+                  currentAccountPicture: CircleAvatar(
+                    backgroundColor: Colors.white,
+                  ),
+                  accountName: Text(userProfile.username),
+                  accountEmail: Text(displayEmail),
+                  arrowColor: Colors.white,
+                  onDetailsPressed: () {},
+                  decoration: BoxDecoration(
+                      color: bgColor,
+                      borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(20),
+                          bottomRight: Radius.circular(20))),
+                );
+              },
             ),
+            // UserAccountsDrawerHeader(
+            //   currentAccountPicture: CircleAvatar(
+            //     backgroundColor: Colors.white,
+            //   ),
+            //   accountName: Text('gwyn'),
+            //   accountEmail: Text(displayEmail),
+            //   arrowColor: Colors.white,
+            //   onDetailsPressed: () {},
+            //   decoration: BoxDecoration(
+            //       color: bgColor,
+            //       borderRadius: BorderRadius.only(
+            //           bottomLeft: Radius.circular(20),
+            //           bottomRight: Radius.circular(20))),
+            // ),
             DrawerItem(
               icon: Icons.person_outline_outlined,
               text: 'Profile',
@@ -409,6 +455,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // TODO: implement dispose
     // _searchCon.dispose();
     searchBarCon.dispose();
+    googleMapController.dispose();
     super.dispose();
   }
 }
