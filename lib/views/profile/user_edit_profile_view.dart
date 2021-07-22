@@ -28,6 +28,7 @@ class EditProfileView extends StatefulWidget {
 
 class _EditProfileViewState extends State<EditProfileView> {
   File _pickedFile;
+  String _currentImg;
 
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController _editUsernameCon = TextEditingController();
@@ -101,11 +102,11 @@ class _EditProfileViewState extends State<EditProfileView> {
       if (_pickedFile != null) {
         pickedFileUrl = await StorageService.uploadProfilePhoto(
             _pickedFile.path, _pickedFile, _auth.currentUser.uid);
+      } else {
+        pickedFileUrl = _currentImg;
       }
-      UserProfile userProfile = UserProfile(
-          username: _editUsernameCon.text,
-          emailAddress: _editEmailCon.text,
-          profilePhoto: pickedFileUrl);
+      UserProfile userProfile =
+          UserProfile.withoutEmail(_editUsernameCon.text, pickedFileUrl);
 
       await DatabaseServices.updateUser(userProfile, _auth.currentUser.uid);
       Navigator.popAndPushNamed(context, '/');
@@ -151,6 +152,7 @@ class _EditProfileViewState extends State<EditProfileView> {
             UserProfile userProfile = UserProfile.fromDocument(snapshot.data);
             _editUsernameCon.text = userProfile.username;
             _editEmailCon.text = userProfile.emailAddress;
+            _currentImg = userProfile.profilePhoto;
 
             return ListView(
               physics: BouncingScrollPhysics(),

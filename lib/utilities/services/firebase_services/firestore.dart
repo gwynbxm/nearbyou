@@ -17,7 +17,7 @@ class DatabaseServices {
   ) async {
     await profileCollection
         .doc(uid)
-        .set(userProfile.toMap())
+        .set(userProfile.signUpToJson())
         .whenComplete(() => print("User added"))
         .catchError((e) => print(e));
   }
@@ -33,7 +33,7 @@ class DatabaseServices {
   ) async {
     await profileCollection
         .doc(uid)
-        .update(userProfile.toMap())
+        .update(userProfile.editProfiletoJson())
         .whenComplete(() => print("User updated"))
         .catchError((e) => print(e));
   }

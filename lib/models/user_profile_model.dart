@@ -8,12 +8,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 
 class UserProfile {
-  final int id;
-  final String username;
-  final String emailAddress;
-  final String profilePhoto;
+  int id;
+  String username;
+  String emailAddress;
+  String profilePhoto;
 
   UserProfile({this.id, this.username, this.emailAddress, this.profilePhoto});
+  UserProfile.withoutEmail(this.username, this.profilePhoto);
 
   factory UserProfile.fromMap(Map<String, dynamic> json) => new UserProfile(
         id: json["id"],
@@ -22,8 +23,13 @@ class UserProfile {
         profilePhoto: json["profilePhoto"],
       );
 
-  Map<String, dynamic> toMap() => {
+  Map<String, dynamic> signUpToJson() => {
         'email': emailAddress,
+        'username': username,
+        'profilePhoto': profilePhoto,
+      };
+
+  Map<String, dynamic> editProfiletoJson() => {
         'username': username,
         'profilePhoto': profilePhoto,
       };
