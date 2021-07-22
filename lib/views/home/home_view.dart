@@ -60,6 +60,8 @@ class _HomeScreenState extends State<HomeScreen> {
   LatLng _lastMapPosition = _center;
   Set<Marker> _markers = HashSet<Marker>();
 
+  final ScrollController scrollController = ScrollController();
+
   @override
   void initState() {
     // TODO: implement initState
@@ -195,57 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
               panelBuilder: (controller) => PanelWidget(
                 controller: controller,
                 panelController: panelController,
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: Padding(
-                          padding: EdgeInsets.only(left: 30, right: 30),
-                          child: selectedLocation
-                              ? Column(
-                                  children: [
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        '$_placeName',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 24,
-                                        ),
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        '$_placeAdd',
-                                        style: TextStyle(fontSize: 15),
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              : Text(
-                                  'Create & share your very own shortcuts with Nearbyou! >>>',
-                                  style: GoogleFonts.poppins(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: primaryDarkColor),
-                                )),
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: RoundedIconButton(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => AddPostView()),
-                        ),
-                        icon: Icons.add_location_alt,
-                      ),
-                    ),
-                  ],
-                ),
+                child: buildPostFeed(context),
               ),
               borderRadius: BorderRadius.vertical(
                 top: Radius.circular(18),
@@ -318,6 +270,116 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Column buildPostFeed(BuildContext context) {
+    return selectedLocation
+        ? Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                height: 65,
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Padding(
+                          padding:
+                              EdgeInsets.only(top: 10, left: 30, right: 30),
+                          child: Column(
+                            children: [
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  '$_placeName',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                              ),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  '$_placeAdd',
+                                  style: TextStyle(fontSize: 15),
+                                ),
+                              ),
+                            ],
+                          )),
+                    ),
+                    buildPostButton(context),
+                  ],
+                ),
+              ),
+              Divider(
+                height: 1,
+                color: primaryColor,
+              ),
+              Flexible(
+                child: Container(
+                  child: ListView.builder(
+                      controller: scrollController,
+                      physics: AlwaysScrollableScrollPhysics(),
+                      primary: false,
+                      scrollDirection: Axis.vertical,
+                      // separatorBuilder: (context, index) => Divider(
+                      //       height: 0.5,
+                      //     ),
+                      shrinkWrap: true,
+                      itemCount: 10,
+                      itemBuilder: (BuildContext context, int index) =>
+                          buildCards(context, index)),
+                ),
+              )
+            ],
+          )
+        : Column(
+            children: [
+              Container(
+                height: 100,
+                child: buildStartingSlideUpInfo(context),
+              ),
+            ],
+          );
+  }
+
+  Row buildStartingSlideUpInfo(BuildContext context) {
+    return Row(
+      // mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Expanded(
+          flex: 3,
+          child: Padding(
+            padding: EdgeInsets.only(left: 30, right: 30),
+            child: Text(
+              'Create & share your very own shortcuts with Nearbyou! >>>',
+              style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: primaryDarkColor),
+            ),
+          ),
+        ),
+        buildPostButton(context),
+      ],
+    );
+  }
+
+  Expanded buildPostButton(BuildContext context) {
+    return Expanded(
+      flex: 1,
+      child: RoundedIconButton(
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => AddPostView()),
+        ),
+        icon: Icons.add_location_alt,
       ),
     );
   }
@@ -457,5 +519,26 @@ class _HomeScreenState extends State<HomeScreen> {
     searchBarCon.dispose();
     googleMapController.dispose();
     super.dispose();
+  }
+
+  buildCards(BuildContext context, int index) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 20.0, right: 15.0),
+              child: CircleAvatar(
+                radius: 24,
+                backgroundImage:
+                    AssetImage('assets/images/default-profile.png'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

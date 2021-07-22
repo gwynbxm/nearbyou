@@ -24,7 +24,7 @@ class PanelWidget extends StatelessWidget {
       children: [
         SizedBox(height: 20),
         buildDragHandle(),
-        SizedBox(height: 20),
+        SizedBox(height: 8),
         Container(
           child: child,
         )
