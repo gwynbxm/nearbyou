@@ -46,7 +46,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final panelController = PanelController();
-  static const double fabHeightClosed = 160.0;
+  static const double fabHeightClosed = 120.0;
   double fabHeight = fabHeightClosed;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -61,6 +61,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Set<Marker> _markers = HashSet<Marker>();
 
   final ScrollController scrollController = ScrollController();
+
+  String _placeName = '';
+  String _placeAdd = '';
+  bool selectedLocation = false;
+  SharedPreferences sharedPreferences;
+  String displayEmail;
 
   @override
   void initState() {
@@ -81,9 +87,6 @@ class _HomeScreenState extends State<HomeScreen> {
   //     });
   //   }
   // }
-
-  SharedPreferences sharedPreferences;
-  String displayEmail;
 
   getCurrentUser() async {
     sharedPreferences = await SharedPreferences.getInstance();
@@ -113,33 +116,52 @@ class _HomeScreenState extends State<HomeScreen> {
     selectedLocation = true;
   }
 
+  void _animateCamera(GoogleMapController controller, LatLng position) {
+    controller.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: position,
+          zoom: 14,
+        ),
+      ),
+    );
+  }
+
   void locatePosition() async {
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-
     LatLng currLatLngPosition = LatLng(position.latitude, position.longitude);
 
-    CameraPosition cameraPosition =
-        new CameraPosition(target: currLatLngPosition, zoom: 14);
-
     setState(() {
+      _getDetailsFromCoordinates(currLatLngPosition);
       _onAddMarker(currLatLngPosition);
-      googleMapController
-          .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+      _animateCamera(googleMapController, currLatLngPosition);
     });
   }
 
-  void _handleTap(LatLng point) {
+  Future<void> _handleTap(LatLng point) async {
     setState(() {
+      _getDetailsFromCoordinates(point);
       _onAddMarker(point);
+      _animateCamera(googleMapController, point);
     });
   }
 
-  bool selectedLocation = false;
-  String _placeName = '';
-  String _placeAdd = '';
+  void _getDetailsFromCoordinates(LatLng point) async {
+    double lat = point.latitude;
+    double lng = point.longitude;
 
-  void _goToPlace(Places places) async {
+    Coordinates coordinates = Coordinates(lat, lng);
+
+    var address =
+        await Geocoder.local.findAddressesFromCoordinates(coordinates);
+
+    _placeName = address.first.featureName;
+    _placeAdd = address.first.addressLine;
+    _searchCon.text = address.first.addressLine;
+  }
+
+  void _getPlacesDetailsFromSearch(Places places) async {
     var lat = places.geometry.locationData.lat;
     var lng = places.geometry.locationData.lng;
 
@@ -171,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
         selectedLocation = true;
         _placeName = placesDetails.placeName;
         _placeAdd = placesDetails.placeAddress;
-        _goToPlace(placesDetails);
+        _getPlacesDetailsFromSearch(placesDetails);
       });
     }
   }
@@ -179,12 +201,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final panelHeightOpen = MediaQuery.of(context).size.height * 0.6;
-    final panelHeightClosed = MediaQuery.of(context).size.height * 0.15;
+    final panelHeightClosed = MediaQuery.of(context).size.height * 0.13;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         key: _scaffoldKey,
         drawer: buildDrawer(context),
+        resizeToAvoidBottomInset: false,
         body: Stack(
           children: [
             SlidingUpPanel(
@@ -229,8 +252,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: EdgeInsets.only(left: 10),
                         color: Colors.black,
                         icon: Icon(Icons.menu),
-                        onPressed: () =>
-                            _scaffoldKey.currentState.openDrawer()),
+                        onPressed: () {
+                          _scaffoldKey.currentState.openDrawer();
+                          // if (panelController.isPanelOpen) {
+                          //   panelController.close();
+                          // }
+                        }),
                     Expanded(
                       child: TextField(
                         keyboardType: TextInputType.text,
@@ -279,46 +306,43 @@ class _HomeScreenState extends State<HomeScreen> {
         ? Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                height: 65,
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: Padding(
-                          padding:
-                              EdgeInsets.only(top: 10, left: 30, right: 30),
-                          child: Column(
-                            children: [
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  '$_placeName',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 24,
+              Wrap(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Padding(
+                            padding:
+                                EdgeInsets.only(top: 10, left: 30, right: 30),
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      '$_placeName',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 24,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      '$_placeAdd',
+                                      style: TextStyle(fontSize: 15),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  '$_placeAdd',
-                                  style: TextStyle(fontSize: 15),
-                                ),
-                              ),
-                            ],
-                          )),
-                    ),
-                    buildPostButton(context),
-                  ],
-                ),
-              ),
-              Divider(
-                height: 1,
-                color: primaryColor,
+                            )),
+                      ),
+                      buildPostButton(context),
+                    ],
+                  ),
+                ],
               ),
               Flexible(
                 child: Container(
@@ -340,9 +364,10 @@ class _HomeScreenState extends State<HomeScreen> {
           )
         : Column(
             children: [
-              Container(
-                height: 100,
-                child: buildStartingSlideUpInfo(context),
+              Wrap(
+                children: [
+                  buildStartingSlideUpInfo(context),
+                ],
               ),
             ],
           );
@@ -352,6 +377,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       // mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
           flex: 3,

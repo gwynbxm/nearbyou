@@ -37,19 +37,19 @@ dependencies:
   # incorporating google places api
   flutter_google_places: "^0.3.0"
   geocoder: "^0.2.1"
-#  geocoding: "^1.0.5"
+  geocoding: "^2.0.0"
 
   uuid: "^3.0.4"
 
   # firebase
-  firebase_core: "^1.3.0"
+  firebase_core: "^1.4.0"
   firebase_auth: "^1.4.1"
   cloud_firestore: "^2.2.2"
 
   shared_preferences: "^2.0.6"
 
   image_picker: ^0.8.1+3
-  firebase_storage: ^10.0.1
+  firebase_storage: "^10.0.1"
 
   google_fonts: ^2.1.0
 
