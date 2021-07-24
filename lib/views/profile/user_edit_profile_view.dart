@@ -209,14 +209,6 @@ class _EditProfileViewState extends State<EditProfileView> {
                                   validator: (value) => value.isEmpty
                                       ? 'Username cannot be blank'
                                       : null),
-                              ProfileInputField(
-                                  controller: _editEmailCon,
-                                  hintText: 'Email Address',
-                                  labelText: 'Email Address',
-                                  icon: Icons.person_rounded,
-                                  validator: (value) => value.isEmpty
-                                      ? 'Email cannot be blank'
-                                      : null),
                             ],
                           ),
                         )

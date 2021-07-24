@@ -46,7 +46,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final panelController = PanelController();
-  static const double fabHeightClosed = 120.0;
+  static const double fabHeightClosed = 135.0;
   double fabHeight = fabHeightClosed;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
 
     // getCurrentUser();
-    locatePosition();
+    _getUserCurrentLocation();
     getCurrentUser();
   }
 
@@ -121,13 +121,13 @@ class _HomeScreenState extends State<HomeScreen> {
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: position,
-          zoom: 14,
+          zoom: 18,
         ),
       ),
     );
   }
 
-  void locatePosition() async {
+  void _getUserCurrentLocation() async {
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
     LatLng currLatLngPosition = LatLng(position.latitude, position.longitude);
@@ -198,9 +198,16 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void clearSearch() {
+    _searchCon.clear();
+    _markers.clear();
+    selectedLocation = false;
+    panelController.close();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final panelHeightOpen = MediaQuery.of(context).size.height * 0.6;
+    final panelHeightOpen = MediaQuery.of(context).size.height * 0.65;
     final panelHeightClosed = MediaQuery.of(context).size.height * 0.13;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -232,10 +239,10 @@ class _HomeScreenState extends State<HomeScreen> {
               }),
             ),
             Positioned(
-              right: 20,
+              right: 25,
               bottom: fabHeight,
               child: RoundedIconButton(
-                onPressed: locatePosition,
+                onPressed: _getUserCurrentLocation,
                 icon: Icons.my_location,
               ),
             ),
@@ -269,17 +276,18 @@ class _HomeScreenState extends State<HomeScreen> {
                           hintStyle: TextStyle(color: Colors.grey),
                           suffixIcon: selectedLocation
                               ? IconButton(
-                                  onPressed: () {
-                                    _searchCon.clear();
-                                    _markers.clear();
-                                    selectedLocation = false;
-                                    panelController.close();
-                                  },
+                                  onPressed: clearSearch,
                                   icon: Icon(Icons.clear),
+                                  color: Colors.grey,
                                 )
-                              : null,
+                              : IconButton(
+                                  onPressed: () {},
+                                  icon: Icon(Icons.search),
+                                  color: Colors.grey,
+                                ),
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(vertical: 15),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 15),
                         ),
                       ),
                     ),
