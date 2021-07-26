@@ -80,7 +80,7 @@ class _ManageProfileState extends State<ManageProfile> {
                 child: CircularProgressIndicator());
           }
 
-          UserProfile userProfile = UserProfile.fromDocument(snapshot.data);
+          UserData userProfile = UserData.fromDocument(snapshot.data);
 
           return ListView(
             physics: BouncingScrollPhysics(),

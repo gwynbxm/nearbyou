@@ -105,10 +105,10 @@ class _EditProfileViewState extends State<EditProfileView> {
       } else {
         pickedFileUrl = _currentImg;
       }
-      UserProfile userProfile =
-          UserProfile.withoutEmail(_editUsernameCon.text, pickedFileUrl);
+      UserData userData =
+          UserData.withoutEmail(_editUsernameCon.text, pickedFileUrl);
 
-      await DatabaseServices.updateUser(userProfile, _auth.currentUser.uid);
+      await DatabaseServices.updateUser(userData, _auth.currentUser.uid);
       Navigator.popAndPushNamed(context, '/');
     } else {
       print('unable to update form');
@@ -149,10 +149,10 @@ class _EditProfileViewState extends State<EditProfileView> {
                   child: CircularProgressIndicator());
             }
 
-            UserProfile userProfile = UserProfile.fromDocument(snapshot.data);
-            _editUsernameCon.text = userProfile.username;
-            _editEmailCon.text = userProfile.emailAddress;
-            _currentImg = userProfile.profilePhoto;
+            UserData userData = UserData.fromDocument(snapshot.data);
+            _editUsernameCon.text = userData.username;
+            _editEmailCon.text = userData.emailAddress;
+            _currentImg = userData.profilePhoto;
 
             return ListView(
               physics: BouncingScrollPhysics(),
@@ -166,10 +166,10 @@ class _EditProfileViewState extends State<EditProfileView> {
                           child: CircleAvatar(
                             radius: 48,
                             backgroundImage:
-                                userProfile?.profilePhoto?.isEmpty ?? true
+                                userData?.profilePhoto?.isEmpty ?? true
                                     ? AssetImage(
                                         'assets/images/default-profile.png')
-                                    : NetworkImage(userProfile.profilePhoto),
+                                    : NetworkImage(userData.profilePhoto),
                             child: _pickedFile != null
                                 ? ClipRRect(
                                     borderRadius: BorderRadius.circular(50),

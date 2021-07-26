@@ -64,8 +64,8 @@ class _RegisterAccState extends State<RegisterAcc> {
     if (form.validate()) {
       User user = await Auth().register(_emailCon.text, _pwdCon.text);
       if (user != null) {
-        UserProfile userProfile = UserProfile(
-            username: _usernameCon.text, emailAddress: _emailCon.text);
+        UserData userProfile =
+            UserData(username: _usernameCon.text, emailAddress: _emailCon.text);
         await DatabaseServices.addUser(user.uid, userProfile);
         Navigator.push(
           context,

@@ -453,13 +453,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: CircularProgressIndicator());
                 }
 
-                UserProfile userProfile =
-                    UserProfile.fromDocument(snapshot.data);
+                UserData userData = UserData.fromDocument(snapshot.data);
                 return UserAccountsDrawerHeader(
                   currentAccountPicture: CircleAvatar(
                     backgroundColor: Colors.white,
+                    backgroundImage: userData?.profilePhoto?.isEmpty ?? true
+                        ? AssetImage('assets/images/default-profile.png')
+                        : NetworkImage(userData.profilePhoto),
                   ),
-                  accountName: Text(userProfile.username),
+                  accountName: Text(userData.username),
                   accountEmail: Text(displayEmail),
                   arrowColor: Colors.white,
                   onDetailsPressed: () {},
