@@ -29,6 +29,7 @@ import 'package:nearbyou/utilities/ui/palette.dart';
 import 'package:nearbyou/views/posting/add_post_view.dart';
 import 'package:nearbyou/views/home/components/address_search.dart';
 import 'package:nearbyou/views/profile/user_profile_view.dart';
+import 'package:nearbyou/views/settings/main_settings_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:uuid/uuid.dart';
@@ -521,7 +522,10 @@ class _HomeScreenState extends State<HomeScreen> {
             DrawerItem(
               icon: Icons.settings_outlined,
               text: 'Settings',
-              onTap: () => Navigator.pushReplacementNamed(context, '/settings'),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => MainSettingsView()),
+              ),
             ),
             Divider(
               height: 20,
@@ -529,10 +533,10 @@ class _HomeScreenState extends State<HomeScreen> {
               indent: 20,
               endIndent: 20,
             ),
-            DrawerItem(
-              icon: Icons.info_outline,
-              text: 'About Nearbyou',
-            ),
+            // DrawerItem(
+            //   icon: Icons.info_outline,
+            //   text: 'Help ',
+            // ),
             DrawerItem(
                 icon: Icons.logout,
                 text: 'Log Out',
@@ -559,21 +563,45 @@ class _HomeScreenState extends State<HomeScreen> {
 
   buildCards(BuildContext context, int index) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 20.0, right: 15.0),
-              child: CircleAvatar(
-                radius: 24,
-                backgroundImage:
-                    AssetImage('assets/images/default-profile.png'),
-              ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          ListTile(
+            leading: CircleAvatar(
+              radius: 24,
+              backgroundImage: AssetImage('assets/images/default-profile.png'),
             ),
-          ],
-        ),
+            title: Text(
+              'primary text',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text('secondary text'),
+          ),
+          //put media here
+          ButtonBar(
+            alignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.thumb_up_alt_outlined,
+                ),
+                onPressed: () {},
+              ),
+              IconButton(
+                icon: Icon(Icons.comment),
+                onPressed: () {},
+              ),
+              IconButton(
+                icon: Icon(Icons.bookmark_border_outlined),
+                onPressed: () {},
+              ),
+              IconButton(
+                icon: Icon(Icons.share),
+                onPressed: () {},
+              ),
+            ],
+          )
+        ],
       ),
     );
   }

@@ -40,6 +40,7 @@ class SearchFieldContainer extends StatelessWidget {
         controller: controller,
         focusNode: focusNode,
         cursorColor: Colors.black,
+        autofocus: false,
         decoration: InputDecoration(
           labelText: labelText,
           labelStyle: TextStyle(color: textDarkColor),

@@ -9,7 +9,10 @@ class LocationData {
   final double lat;
   final double lng;
 
-  LocationData({this.lat, this.lng});
+  LocationData({
+    this.lat,
+    this.lng,
+  });
 
   factory LocationData.fromMap(Map<dynamic, dynamic> json) {
     return LocationData(

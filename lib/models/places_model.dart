@@ -11,7 +11,11 @@ class Places {
   final String placeName;
   final String placeAddress;
 
-  Places({this.geometry, this.placeName, this.placeAddress});
+  Places({
+    this.geometry,
+    this.placeName,
+    this.placeAddress,
+  });
 
   factory Places.fromMap(Map<String, dynamic> json) {
     return Places(
