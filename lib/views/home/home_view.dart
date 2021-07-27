@@ -26,6 +26,7 @@ import 'package:nearbyou/utilities/services/firebase_services/firestore.dart';
 import 'package:nearbyou/utilities/ui/components/panel_widget.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_icon_button.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
+import 'package:nearbyou/views/home/route_details_view.dart';
 import 'package:nearbyou/views/posting/add_post_view.dart';
 import 'package:nearbyou/views/home/components/address_search.dart';
 import 'package:nearbyou/views/profile/user_profile_view.dart';
@@ -566,16 +567,23 @@ class _HomeScreenState extends State<HomeScreen> {
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          ListTile(
-            leading: CircleAvatar(
-              radius: 24,
-              backgroundImage: AssetImage('assets/images/default-profile.png'),
+          GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => RouteDetailsView()),
             ),
-            title: Text(
-              'primary text',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            child: ListTile(
+              leading: CircleAvatar(
+                radius: 24,
+                backgroundImage:
+                    AssetImage('assets/images/default-profile.png'),
+              ),
+              title: Text(
+                'primary text',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text('secondary text'),
             ),
-            subtitle: Text('secondary text'),
           ),
           //put media here
           ButtonBar(
