@@ -20,6 +20,7 @@ import 'package:geocoder/geocoder.dart';
 import 'package:nearbyou/models/places_model.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
 import 'package:nearbyou/models/user_profile_model.dart';
+import 'package:nearbyou/utilities/constants/constants.dart';
 import 'package:nearbyou/utilities/services/firebase_services/authentication.dart';
 import 'package:nearbyou/utilities/services/api_services/google_places.dart';
 import 'package:nearbyou/utilities/services/firebase_services/firestore.dart';
@@ -58,8 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
   var geoLocator = Geolocator();
   GoogleMapController googleMapController;
 
-  static const LatLng _center = const LatLng(1.3649170, 103.8228720);
-  LatLng _lastMapPosition = _center;
+  LatLng _lastMapPosition = initialPosition;
   Set<Marker> _markers = HashSet<Marker>();
 
   final ScrollController scrollController = ScrollController();
@@ -110,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _markers.clear();
     _markers.add(
       Marker(
-        markerId: MarkerId(_center.toString()),
+        markerId: MarkerId(initialPosition.toString()),
         position: coordinates,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
       ),
@@ -205,6 +205,22 @@ class _HomeScreenState extends State<HomeScreen> {
     _markers.clear();
     selectedLocation = false;
     panelController.close();
+  }
+
+  void createPost() {
+    String endpoint = _searchCon.text;
+    selectedLocation
+        ? Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => AddPostView(
+                      endPoint: endpoint,
+                    )),
+          )
+        : Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddPostView()),
+          );
   }
 
   @override
@@ -411,10 +427,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Expanded(
       flex: 1,
       child: RoundedIconButton(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => AddPostView()),
-        ),
+        onPressed: createPost,
         icon: Icons.add_location_alt,
       ),
     );
@@ -430,7 +443,7 @@ class _HomeScreenState extends State<HomeScreen> {
       zoomControlsEnabled: false,
       mapToolbarEnabled: false,
       initialCameraPosition: CameraPosition(
-        target: _center,
+        target: initialPosition,
         zoom: 11.0,
       ),
       mapType: MapType.normal,

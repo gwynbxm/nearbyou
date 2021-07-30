@@ -8,7 +8,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:nearbyou/models/route_data_model.dart';
+import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
 import 'package:nearbyou/utilities/constants/constants.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_icon_button.dart';
@@ -24,7 +24,9 @@ import 'components/divider_widget.dart';
 import 'components/search_text_field.dart';
 
 class AddPostView extends StatefulWidget {
-  const AddPostView({Key key}) : super(key: key);
+  final String endPoint;
+
+  const AddPostView({Key key, this.endPoint}) : super(key: key);
 
   @override
   _AddPostViewState createState() => _AddPostViewState();
@@ -42,6 +44,13 @@ class _AddPostViewState extends State<AddPostView> {
   GoogleMapController googleMapController;
   LatLng _lastMapPosition = initialPosition;
   Set<Marker> _markers = HashSet<Marker>();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    _endPointCon.text = widget.endPoint;
+    super.initState();
+  }
 
   void _onMapCreated(GoogleMapController controller) {
     googleMapController = controller;
@@ -61,6 +70,16 @@ class _AddPostViewState extends State<AddPostView> {
       return result.placeDesc;
     }
     return result.placeDesc;
+  }
+
+  void _onAddMarker(LatLng coordinates) {
+    _markers.add(
+      Marker(
+        markerId: MarkerId(initialPosition.toString()),
+        position: coordinates,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+      ),
+    );
   }
 
   @override
@@ -91,10 +110,10 @@ class _AddPostViewState extends State<AddPostView> {
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
-        floatingActionButton: RoundedIconButton(
-          icon: Icons.add,
-          onPressed: () {},
-        ),
+        // floatingActionButton: RoundedIconButton(
+        //   icon: Icons.add,
+        //   onPressed: () {},
+        // ),
         // SpeedDialWidget(),
         body: Center(
           child: Container(
@@ -162,9 +181,12 @@ class _AddPostViewState extends State<AddPostView> {
                     ),
                   ),
                   buildDivider(),
+                  SizedBox(
+                    height: 15,
+                  ),
                   Container(
                     width: MediaQuery.of(context).size.width,
-                    height: 500,
+                    height: 550,
                     child: buildGoogleMap(),
                   ),
                 ],
@@ -186,7 +208,7 @@ class _AddPostViewState extends State<AddPostView> {
       mapToolbarEnabled: false,
       initialCameraPosition: CameraPosition(
         target: initialPosition,
-        zoom: 11.0,
+        zoom: 15.0,
       ),
       mapType: MapType.normal,
       markers: _markers,
