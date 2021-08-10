@@ -17,6 +17,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:geocoder/geocoder.dart';
+import 'package:nearbyou/models/geometry_model.dart';
 import 'package:nearbyou/models/places_model.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
 import 'package:nearbyou/models/user_profile_model.dart';
@@ -53,14 +54,16 @@ class _HomeScreenState extends State<HomeScreen> {
   double fabHeight = fabHeightClosed;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  FloatingSearchBarController searchBarCon = FloatingSearchBarController();
+  // FloatingSearchBarController searchBarCon = FloatingSearchBarController();
   final _searchCon = TextEditingController();
+  final searchLocFocus = FocusNode();
 
   var geoLocator = Geolocator();
   GoogleMapController googleMapController;
 
+  static const LatLng initialPosition = const LatLng(1.3649170, 103.8228720);
   LatLng _lastMapPosition = initialPosition;
-  Set<Marker> _markers = HashSet<Marker>();
+  Set<Marker> _markers = Set<Marker>();
 
   final ScrollController scrollController = ScrollController();
 
@@ -69,6 +72,8 @@ class _HomeScreenState extends State<HomeScreen> {
   bool selectedLocation = false;
   SharedPreferences sharedPreferences;
   String displayEmail;
+
+  Places getPlacesData;
 
   @override
   void initState() {
@@ -214,7 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
             context,
             MaterialPageRoute(
                 builder: (context) => AddPostView(
-                      endPoint: endpoint,
+                      destPointData: endpoint,
                     )),
           )
         : Navigator.push(
@@ -229,99 +234,105 @@ class _HomeScreenState extends State<HomeScreen> {
     final panelHeightClosed = MediaQuery.of(context).size.height * 0.13;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        key: _scaffoldKey,
-        drawer: buildDrawer(context),
-        resizeToAvoidBottomInset: false,
-        body: Stack(
-          children: [
-            SlidingUpPanel(
-              body: buildGoogleMap(),
-              controller: panelController,
-              minHeight: panelHeightClosed,
-              maxHeight: panelHeightOpen,
-              parallaxEnabled: true,
-              parallaxOffset: .5,
-              panelBuilder: (controller) => PanelWidget(
-                controller: controller,
-                panelController: panelController,
-                child: buildPostFeed(context),
-              ),
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(18),
-              ),
-              onPanelSlide: (position) => setState(() {
-                final panelMaxScrollExtent =
-                    panelHeightOpen - panelHeightClosed;
-                fabHeight = position * panelMaxScrollExtent + fabHeightClosed;
-              }),
-            ),
-            Positioned(
-              right: 25,
-              bottom: fabHeight,
-              child: RoundedIconButton(
-                onPressed: _getUserCurrentLocation,
-                icon: Icons.my_location,
-              ),
-            ),
-            SafeArea(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(29),
+      home: GestureDetector(
+        onTap: () {
+          searchLocFocus.unfocus();
+        },
+        child: Scaffold(
+          key: _scaffoldKey,
+          drawer: buildDrawer(context),
+          resizeToAvoidBottomInset: false,
+          body: Stack(
+            children: [
+              SlidingUpPanel(
+                body: buildGoogleMap(),
+                controller: panelController,
+                minHeight: panelHeightClosed,
+                maxHeight: panelHeightOpen,
+                parallaxEnabled: true,
+                parallaxOffset: .5,
+                panelBuilder: (controller) => PanelWidget(
+                  controller: controller,
+                  panelController: panelController,
+                  child: buildPostFeed(context),
                 ),
-                margin: EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    IconButton(
-                        padding: EdgeInsets.only(left: 10),
-                        color: Colors.black,
-                        icon: Icon(Icons.menu),
-                        onPressed: () {
-                          _scaffoldKey.currentState.openDrawer();
-                          // if (panelController.isPanelOpen) {
-                          //   panelController.close();
-                          // }
-                        }),
-                    Expanded(
-                      child: TextField(
-                        keyboardType: TextInputType.text,
-                        controller: _searchCon,
-                        readOnly: true,
-                        onTap: _searchPlace,
-                        decoration: InputDecoration(
-                          hintText: "Search ....",
-                          hintStyle: TextStyle(color: Colors.grey),
-                          suffixIcon: selectedLocation
-                              ? IconButton(
-                                  onPressed: clearSearch,
-                                  icon: Icon(Icons.clear),
-                                  color: Colors.grey,
-                                )
-                              : IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(Icons.search),
-                                  color: Colors.grey,
-                                ),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 15),
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(18),
+                ),
+                onPanelSlide: (position) => setState(() {
+                  final panelMaxScrollExtent =
+                      panelHeightOpen - panelHeightClosed;
+                  fabHeight = position * panelMaxScrollExtent + fabHeightClosed;
+                }),
+              ),
+              Positioned(
+                right: 25,
+                bottom: fabHeight,
+                child: RoundedIconButton(
+                  onPressed: _getUserCurrentLocation,
+                  icon: Icons.my_location,
+                ),
+              ),
+              SafeArea(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(29),
+                  ),
+                  margin: EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      IconButton(
+                          padding: EdgeInsets.only(left: 10),
+                          color: textLightColor,
+                          icon: Icon(Icons.menu),
+                          onPressed: () {
+                            _scaffoldKey.currentState.openDrawer();
+                            // if (panelController.isPanelOpen) {
+                            //   panelController.close();
+                            // }
+                          }),
+                      Expanded(
+                        child: TextField(
+                          keyboardType: TextInputType.text,
+                          controller: _searchCon,
+                          readOnly: true,
+                          focusNode: searchLocFocus,
+                          onTap: _searchPlace,
+                          decoration: InputDecoration(
+                            hintText: "Search ....",
+                            hintStyle: TextStyle(color: Colors.grey),
+                            suffixIcon: selectedLocation
+                                ? IconButton(
+                                    onPressed: clearSearch,
+                                    icon: Icon(Icons.clear),
+                                    color: Colors.grey,
+                                  )
+                                : IconButton(
+                                    onPressed: () {},
+                                    icon: Icon(Icons.search),
+                                    color: Colors.grey,
+                                  ),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 15),
+                          ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(right: 8),
-                      child: IconButton(
-                        icon: Icon(Icons.filter_alt_outlined),
-                        color: Colors.black,
-                        onPressed: () {},
-                      ),
-                    )
-                  ],
+                      Padding(
+                        padding: EdgeInsets.only(right: 8),
+                        child: IconButton(
+                          icon: Icon(Icons.filter_alt_outlined),
+                          color: textLightColor,
+                          onPressed: () {},
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -570,7 +581,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     // TODO: implement dispose
     // _searchCon.dispose();
-    searchBarCon.dispose();
+    // searchBarCon.dispose();
+    _searchCon.dispose();
     googleMapController.dispose();
     super.dispose();
   }

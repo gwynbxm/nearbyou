@@ -4,7 +4,8 @@
  * Last modified 26/7/21 4:58 PM
  */
 import 'package:flutter/material.dart';
-import 'package:nearbyou/views/posting/components/appbar_text_button.dart';
+
+import 'components/settings_item.dart';
 
 class MainSettingsView extends StatefulWidget {
   const MainSettingsView({Key key}) : super(key: key);
@@ -19,7 +20,7 @@ class _MainSettingsViewState extends State<MainSettingsView> {
     return Scaffold(
       appBar: AppBar(
         //Before closing, prompt user if want to save as draft or discard post
-        leading: CloseButton(
+        leading: BackButton(
           onPressed: () => Navigator.of(context).pop(),
           color: Colors.black,
         ),
@@ -53,16 +54,23 @@ class _MainSettingsViewState extends State<MainSettingsView> {
             SizedBox(
               height: 10,
             ),
-            GestureDetector(
+            SettingsItem(
+              title: 'Manage Account',
               onTap: () {},
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Manage Account',
-                  ),
-                ],
-              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            SettingsItem(
+              title: 'Privacy & Security',
+              onTap: () {},
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            SettingsItem(
+              title: 'Language',
+              onTap: () {},
             ),
             SizedBox(
               height: 40,
@@ -85,16 +93,23 @@ class _MainSettingsViewState extends State<MainSettingsView> {
             SizedBox(
               height: 10,
             ),
-            GestureDetector(
+            SettingsItem(
+              title: 'Notifications',
               onTap: () {},
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'About Nearbyou',
-                  ),
-                ],
-              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            SettingsItem(
+              title: 'Help Center',
+              onTap: () {},
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            SettingsItem(
+              title: 'About Nearbyou',
+              onTap: () {},
             ),
           ],
         ),

@@ -11,8 +11,9 @@ class SearchFieldContainer extends StatelessWidget {
   final FocusNode focusNode;
   final String labelText;
   final String hintText;
-  final Icon prefixIcon;
-  final IconButton suffixIcon;
+  final IconData prefixIcon;
+  final IconData suffixIcon;
+  final GestureTapCallback suffixIconOnPressed;
   final GestureTapCallback onTap;
   final TextStyle labelStyle;
   final TextStyle hintStyle;
@@ -25,6 +26,7 @@ class SearchFieldContainer extends StatelessWidget {
       this.hintText,
       this.prefixIcon,
       this.suffixIcon,
+      this.suffixIconOnPressed,
       this.onTap,
       this.labelStyle,
       this.hintStyle})
@@ -46,8 +48,17 @@ class SearchFieldContainer extends StatelessWidget {
           labelStyle: TextStyle(color: textDarkColor),
           hintText: hintText,
           hintStyle: TextStyle(color: Colors.grey),
-          prefixIcon: prefixIcon,
-          suffixIcon: suffixIcon,
+          prefixIcon: Icon(
+            prefixIcon,
+            color: textLightColor,
+          ),
+          suffixIcon: IconButton(
+            icon: Icon(
+              suffixIcon,
+              color: primaryColor,
+            ),
+            onPressed: suffixIconOnPressed,
+          ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.all(
               Radius.circular(30.0),

@@ -26,7 +26,7 @@ class DrawerItem extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: primaryColor,
+            color: textLightColor,
           ),
           Padding(
             padding: EdgeInsets.only(left: 8.0),
