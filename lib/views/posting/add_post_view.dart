@@ -5,12 +5,16 @@
  */
 
 import 'dart:collection';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:nearbyou/models/places_model.dart';
 import 'package:nearbyou/models/route_marker_model.dart';
+import 'package:nearbyou/models/route_post_model.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
 import 'package:nearbyou/utilities/constants/constants.dart';
+import 'package:nearbyou/utilities/ui/components/rounded_navi_icon_button.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_icon_button.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
 import 'package:nearbyou/views/posting/add_route_view.dart';
@@ -24,31 +28,38 @@ import 'components/divider_widget.dart';
 import 'components/search_text_field.dart';
 
 class AddPostView extends StatefulWidget {
-  final String endPoint;
+  final String destPointData;
 
-  const AddPostView({Key key, this.endPoint}) : super(key: key);
+  const AddPostView({Key key, this.destPointData}) : super(key: key);
 
   @override
   _AddPostViewState createState() => _AddPostViewState();
 }
 
 class _AddPostViewState extends State<AddPostView> {
-  TextEditingController _startPointCon = TextEditingController();
-  TextEditingController _endPointCon = TextEditingController();
+  static const LatLng initialPosition = const LatLng(1.3649170, 103.8228720);
+
+  TextEditingController _destPointCon = TextEditingController();
   TextEditingController _postDescCon = TextEditingController();
 
-  final startPointFocus = FocusNode();
-  final endPointFocus = FocusNode();
+  final destPointFocus = FocusNode();
   final postDescFocus = FocusNode();
 
   GoogleMapController googleMapController;
   LatLng _lastMapPosition = initialPosition;
-  Set<Marker> _markers = HashSet<Marker>();
+  // Set<Marker> markerSet = HashSet<Marker>();
+  List<Marker> markerList = [];
+  List<RoutePost> routePostList = [];
+
+  bool selectedLocation = false;
 
   @override
   void initState() {
     // TODO: implement initState
-    _endPointCon.text = widget.endPoint;
+    // _destPointCon.text = widget.destPointData;
+    if (widget.destPointData != null) {
+      selectedLocation = true;
+    }
     super.initState();
   }
 
@@ -58,6 +69,16 @@ class _AddPostViewState extends State<AddPostView> {
 
   void _onCameraMove(CameraPosition position) {
     _lastMapPosition = position.target;
+  }
+
+  void _onAddMarker(LatLng coordinates) {
+    var markerCount = markerList.length + 1;
+    String markers = markerCount.toString();
+    final MarkerId markerId = MarkerId(markers);
+    final Marker marker = Marker(markerId: markerId, position: coordinates);
+    setState(() {
+      markerList.add(marker);
+    });
   }
 
   Future<String> searchPlaces() async {
@@ -72,128 +93,140 @@ class _AddPostViewState extends State<AddPostView> {
     return result.placeDesc;
   }
 
-  void _onAddMarker(LatLng coordinates) {
-    _markers.add(
-      Marker(
-        markerId: MarkerId(initialPosition.toString()),
-        position: coordinates,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        startPointFocus.unfocus();
-        endPointFocus.unfocus();
+        destPointFocus.unfocus();
         postDescFocus.unfocus();
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          //Before closing, prompt user if want to save as draft or discard post
-          leading: CloseButton(
-            onPressed: () => Navigator.of(context).pop(),
-            color: Colors.black,
+        floatingActionButton: RoundedIconButton(
+          icon: Icons.add,
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddRouteDataView()),
           ),
-          title: Text(
-            'Create Post',
-            style: TextStyle(color: Colors.black),
-          ),
-          actions: [
-            //this should save to firestore
-            IconButton(
-                icon: Icon(Icons.check, color: Colors.black), onPressed: () {}),
-          ],
-          backgroundColor: Colors.transparent,
-          elevation: 0,
         ),
-        // floatingActionButton: RoundedIconButton(
-        //   icon: Icons.add,
-        //   onPressed: () {},
-        // ),
         // SpeedDialWidget(),
-        body: Center(
-          child: Container(
-            padding: EdgeInsets.all(15),
-            height: MediaQuery.of(context).size.height,
-            child: SingleChildScrollView(
-              child: Column(
+        body: Stack(
+          children: [
+            buildGoogleMap(),
+            SafeArea(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  SearchFieldContainer(
-                    controller: _startPointCon,
-                    focusNode: startPointFocus,
-                    labelText: "Start",
-                    hintText: "Choose starting point",
-                    prefixIcon: Icon(
-                      Icons.location_on_rounded,
-                      color: textLightColor,
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
+                    child: RoundedBasicIconButton(
+                      icon: Icons.close,
+                      onPressed: () => Navigator.of(context).pop(),
                     ),
-                    suffixIcon: IconButton(
-                      icon: Icon(Icons.my_location),
-                      color: primaryColor,
+                  ),
+                  Expanded(
+                    // margin: EdgeInsets.all(16),
+                    // color: Colors.white,
+                    child: Container(
+                      color: Colors.white,
+                      // margin: EdgeInsets.all(5),
+                      child: TextField(
+                        keyboardType: TextInputType.text,
+                        controller: _destPointCon,
+                        readOnly: true,
+                        focusNode: destPointFocus,
+                        decoration: InputDecoration(
+                          hintText: "Where are you going?",
+                          hintStyle: TextStyle(color: Colors.grey),
+                          suffixIcon: selectedLocation
+                              ? IconButton(
+                                  onPressed: clearSearch,
+                                  icon: Icon(Icons.clear),
+                                  color: Colors.grey,
+                                )
+                              : IconButton(
+                                  onPressed: () {},
+                                  icon: Icon(Icons.search),
+                                  color: Colors.grey,
+                                ),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 15, vertical: 15),
+                        ),
+                        onTap: () async {
+                          final place = await searchPlaces();
+                          setState(() {
+                            _destPointCon.text = place;
+                            selectedLocation = true;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
+                    child: RoundedBasicIconButton(
+                      icon: Icons.check,
                       onPressed: () {},
                     ),
-                    onTap: () async {
-                      final place = await searchPlaces();
-                      setState(() {
-                        _startPointCon.text = place;
-                      });
-                    },
-                  ),
-                  SizedBox(
-                    height: 15,
-                  ),
-                  SearchFieldContainer(
-                    controller: _endPointCon,
-                    focusNode: endPointFocus,
-                    labelText: "Destination",
-                    hintText: "Choose destination point",
-                    prefixIcon: Icon(
-                      Icons.flag,
-                      color: textLightColor,
-                    ),
-                    onTap: () async {
-                      final place = await searchPlaces();
-                      setState(() {
-                        _endPointCon.text = place;
-                      });
-                    },
-                  ),
-                  SizedBox(
-                    height: 15,
-                  ),
-                  buildDivider(),
-                  Container(
-                    margin: EdgeInsets.only(left: 30, right: 30),
-                    child: TextFormField(
-                      focusNode: postDescFocus,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: 'Write something here ....',
-                        hintMaxLines: 4,
-                      ),
-                      controller: _postDescCon,
-                      keyboardType: TextInputType.multiline,
-                      maxLines: 3,
-                    ),
-                  ),
-                  buildDivider(),
-                  SizedBox(
-                    height: 15,
-                  ),
-                  Container(
-                    width: MediaQuery.of(context).size.width,
-                    height: 550,
-                    child: buildGoogleMap(),
                   ),
                 ],
               ),
             ),
-          ),
+          ],
         ),
+        // Center(
+        //   child: Container(
+        //     padding: EdgeInsets.all(15),
+        //     height: MediaQuery.of(context).size.height,
+        //     child: SingleChildScrollView(
+        //       child: Column(
+        //         children: [
+        //           SearchFieldContainer(
+        //             controller: _endPointCon,
+        //             focusNode: endPointFocus,
+        //             labelText: "Destination",
+        //             hintText: "Choose destination point",
+        //             prefixIcon: Icons.flag,
+        //             onTap: () async {
+        //               final place = await searchPlaces();
+        //               setState(() {
+        //                 _endPointCon.text = place;
+        //               });
+        //             },
+        //           ),
+        //           SizedBox(
+        //             height: 15,
+        //           ),
+        //           buildDivider(),
+        //           Container(
+        //             margin: EdgeInsets.only(left: 30, right: 30),
+        //             child: TextFormField(
+        //               focusNode: postDescFocus,
+        //               decoration: InputDecoration(
+        //                 border: InputBorder.none,
+        //                 hintText: 'Write something here ....',
+        //                 hintMaxLines: 4,
+        //               ),
+        //               controller: _postDescCon,
+        //               keyboardType: TextInputType.multiline,
+        //               maxLines: 4,
+        //             ),
+        //           ),
+        //           buildDivider(),
+        //           SizedBox(
+        //             height: 15,
+        //           ),
+        //           Container(
+        //             width: MediaQuery.of(context).size.width,
+        //             height: 570,
+        //             child: buildGoogleMap(),
+        //           ),
+        //         ],
+        //       ),
+        //     ),
+        //   ),
+        // ),
       ),
     );
   }
@@ -211,17 +244,23 @@ class _AddPostViewState extends State<AddPostView> {
         zoom: 15.0,
       ),
       mapType: MapType.normal,
-      markers: _markers,
+      markers: Set<Marker>.of(markerList),
       onCameraMove: _onCameraMove,
-      // onTap: _handleTap,
+      onTap: _onAddMarker,
     );
+  }
+
+  void clearSearch() {
+    setState(() {
+      _destPointCon.clear();
+      selectedLocation = false;
+    });
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
-    _startPointCon.dispose();
-    _endPointCon.dispose();
+    _destPointCon.dispose();
     _postDescCon.dispose();
     super.dispose();
   }
