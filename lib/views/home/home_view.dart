@@ -19,6 +19,7 @@ import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:nearbyou/models/geometry_model.dart';
 import 'package:nearbyou/models/places_model.dart';
+import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
 import 'package:nearbyou/models/user_profile_model.dart';
 import 'package:nearbyou/utilities/constants/constants.dart';
@@ -73,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
   SharedPreferences sharedPreferences;
   String displayEmail;
 
-  Places getPlacesData;
+  RouteMarker routeMarker;
 
   @override
   void initState() {
@@ -111,7 +112,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onAddMarker(LatLng coordinates) {
-    //always clear existing markers in order to add new marker
     _markers.clear();
     _markers.add(
       Marker(
@@ -121,6 +121,10 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
     selectedLocation = true;
+    setState(() {
+      routeMarker =
+          RouteMarker(initialPosition.toString(), null, coordinates, 0);
+    });
   }
 
   void _animateCamera(GoogleMapController controller, LatLng position) {
@@ -146,6 +150,50 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _searchPlace() async {
+    final sessionToken = Uuid().v4();
+    final Suggestions result = await showSearch(
+      context: context,
+      delegate: PlacesSearch(sessionToken),
+    );
+    if (result != null) {
+      final placesDetails =
+          await PlaceApiProvider(sessionToken).getPlacesDetails(result.placeId);
+
+      setState(() {
+        _searchCon.text = result.placeDesc;
+        panelController.open();
+        selectedLocation = true;
+        _placeName = placesDetails.placeName;
+        _placeAdd = placesDetails.placeAddress;
+        _getPlacesDetailsFromSearch(placesDetails);
+      });
+    }
+  }
+
+  void _getPlacesDetailsFromSearch(Places places) async {
+    var lat = places.geometry.locationData.lat;
+    var lng = places.geometry.locationData.lng;
+
+    LatLng coordinates = LatLng(lat, lng);
+
+    setState(() {
+      _onAddMarker(coordinates);
+      googleMapController.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(target: coordinates, zoom: 14.0),
+        ),
+      );
+    });
+  }
+
+  void clearSearch() {
+    _searchCon.clear();
+    _markers.clear();
+    selectedLocation = false;
+    panelController.close();
+  }
+
   Future<void> _handleTap(LatLng point) async {
     setState(() {
       _getDetailsFromCoordinates(point);
@@ -168,58 +216,13 @@ class _HomeScreenState extends State<HomeScreen> {
     _searchCon.text = address.first.addressLine;
   }
 
-  void _getPlacesDetailsFromSearch(Places places) async {
-    var lat = places.geometry.locationData.lat;
-    var lng = places.geometry.locationData.lng;
-
-    LatLng coordinates = LatLng(lat, lng);
-
-    setState(() {
-      _onAddMarker(coordinates);
-      googleMapController.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(target: coordinates, zoom: 14.0),
-        ),
-      );
-    });
-  }
-
-  void _searchPlace() async {
-    final sessionToken = Uuid().v4();
-    final Suggestions result = await showSearch(
-      context: context,
-      delegate: PlacesSearch(sessionToken),
-    );
-    if (result != null) {
-      final placesDetails =
-          await PlaceApiProvider(sessionToken).getPlacesDetails(result.placeId);
-
-      setState(() {
-        _searchCon.text = result.placeDesc;
-        panelController.open();
-        selectedLocation = true;
-        _placeName = placesDetails.placeName;
-        _placeAdd = placesDetails.placeAddress;
-        _getPlacesDetailsFromSearch(placesDetails);
-      });
-    }
-  }
-
-  void clearSearch() {
-    _searchCon.clear();
-    _markers.clear();
-    selectedLocation = false;
-    panelController.close();
-  }
-
   void createPost() {
-    String endpoint = _searchCon.text;
     selectedLocation
         ? Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (context) => AddPostView(
-                      destPointData: endpoint,
+                      destPointData: routeMarker,
                     )),
           )
         : Navigator.push(

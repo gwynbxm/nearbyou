@@ -4,6 +4,7 @@
  * Last modified 16/7/21 11:42 PM
  */
 
+import 'dart:async';
 import 'dart:collection';
 import 'dart:developer';
 
@@ -28,7 +29,7 @@ import 'components/divider_widget.dart';
 import 'components/search_text_field.dart';
 
 class AddPostView extends StatefulWidget {
-  final String destPointData;
+  final RouteMarker destPointData;
 
   const AddPostView({Key key, this.destPointData}) : super(key: key);
 
@@ -46,6 +47,8 @@ class _AddPostViewState extends State<AddPostView> {
   final postDescFocus = FocusNode();
 
   GoogleMapController googleMapController;
+  Completer<GoogleMapController> _completer = Completer();
+
   LatLng _lastMapPosition = initialPosition;
   // Set<Marker> markerSet = HashSet<Marker>();
   List<Marker> markerList = [];
@@ -56,14 +59,21 @@ class _AddPostViewState extends State<AddPostView> {
   @override
   void initState() {
     // TODO: implement initState
-    // _destPointCon.text = widget.destPointData;
     if (widget.destPointData != null) {
       selectedLocation = true;
+      _destPointCon.text = widget.destPointData.location.toString();
+
+      setState(() {
+        _onAddMarker(widget.destPointData.location);
+        animateCamera(widget.destPointData.location);
+      });
     }
+
     super.initState();
   }
 
   void _onMapCreated(GoogleMapController controller) {
+    _completer.complete(controller);
     googleMapController = controller;
   }
 
@@ -79,6 +89,18 @@ class _AddPostViewState extends State<AddPostView> {
     setState(() {
       markerList.add(marker);
     });
+  }
+
+  Future<void> animateCamera(LatLng position) async {
+    final GoogleMapController googleMapController = await _completer.future;
+    googleMapController.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: position,
+          zoom: 18,
+        ),
+      ),
+    );
   }
 
   Future<String> searchPlaces() async {
@@ -175,58 +197,6 @@ class _AddPostViewState extends State<AddPostView> {
             ),
           ],
         ),
-        // Center(
-        //   child: Container(
-        //     padding: EdgeInsets.all(15),
-        //     height: MediaQuery.of(context).size.height,
-        //     child: SingleChildScrollView(
-        //       child: Column(
-        //         children: [
-        //           SearchFieldContainer(
-        //             controller: _endPointCon,
-        //             focusNode: endPointFocus,
-        //             labelText: "Destination",
-        //             hintText: "Choose destination point",
-        //             prefixIcon: Icons.flag,
-        //             onTap: () async {
-        //               final place = await searchPlaces();
-        //               setState(() {
-        //                 _endPointCon.text = place;
-        //               });
-        //             },
-        //           ),
-        //           SizedBox(
-        //             height: 15,
-        //           ),
-        //           buildDivider(),
-        //           Container(
-        //             margin: EdgeInsets.only(left: 30, right: 30),
-        //             child: TextFormField(
-        //               focusNode: postDescFocus,
-        //               decoration: InputDecoration(
-        //                 border: InputBorder.none,
-        //                 hintText: 'Write something here ....',
-        //                 hintMaxLines: 4,
-        //               ),
-        //               controller: _postDescCon,
-        //               keyboardType: TextInputType.multiline,
-        //               maxLines: 4,
-        //             ),
-        //           ),
-        //           buildDivider(),
-        //           SizedBox(
-        //             height: 15,
-        //           ),
-        //           Container(
-        //             width: MediaQuery.of(context).size.width,
-        //             height: 570,
-        //             child: buildGoogleMap(),
-        //           ),
-        //         ],
-        //       ),
-        //     ),
-        //   ),
-        // ),
       ),
     );
   }
@@ -241,7 +211,7 @@ class _AddPostViewState extends State<AddPostView> {
       mapToolbarEnabled: false,
       initialCameraPosition: CameraPosition(
         target: initialPosition,
-        zoom: 15.0,
+        zoom: 11.0,
       ),
       mapType: MapType.normal,
       markers: Set<Marker>.of(markerList),
