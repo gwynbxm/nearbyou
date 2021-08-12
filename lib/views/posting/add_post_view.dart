@@ -1,7 +1,7 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 16/7/21 11:42 PM
+ * Last modified 12/8/21 6:47 PM
  */
 
 import 'dart:async';
@@ -14,7 +14,9 @@ import 'package:nearbyou/models/places_model.dart';
 import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/models/route_post_model.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
+import 'package:nearbyou/models/user_profile_model.dart';
 import 'package:nearbyou/utilities/constants/constants.dart';
+import 'package:nearbyou/utilities/services/firebase_services/firestore.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_navi_icon_button.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_icon_button.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
@@ -29,9 +31,11 @@ import 'components/divider_widget.dart';
 import 'components/search_text_field.dart';
 
 class AddPostView extends StatefulWidget {
+  final String currentUser;
   final RouteMarker destPointData;
 
-  const AddPostView({Key key, this.destPointData}) : super(key: key);
+  const AddPostView({Key key, this.destPointData, this.currentUser})
+      : super(key: key);
 
   @override
   _AddPostViewState createState() => _AddPostViewState();
@@ -50,8 +54,9 @@ class _AddPostViewState extends State<AddPostView> {
   Completer<GoogleMapController> _completer = Completer();
 
   LatLng _lastMapPosition = initialPosition;
-  // Set<Marker> markerSet = HashSet<Marker>();
   List<Marker> markerList = [];
+  RouteMarker routeMarker;
+  List<RouteMarker> routeMarkerList = [];
   List<RoutePost> routePostList = [];
 
   bool selectedLocation = false;
@@ -61,11 +66,11 @@ class _AddPostViewState extends State<AddPostView> {
     // TODO: implement initState
     if (widget.destPointData != null) {
       selectedLocation = true;
-      _destPointCon.text = widget.destPointData.location.toString();
+      _destPointCon.text = widget.destPointData.coordinates.toString();
 
       setState(() {
-        _onAddMarker(widget.destPointData.location);
-        animateCamera(widget.destPointData.location);
+        _onAddMarker(widget.destPointData.coordinates);
+        animateCamera(widget.destPointData.coordinates);
       });
     }
 
@@ -84,10 +89,20 @@ class _AddPostViewState extends State<AddPostView> {
   void _onAddMarker(LatLng coordinates) {
     var markerCount = markerList.length + 1;
     String markers = markerCount.toString();
-    final MarkerId markerId = MarkerId(markers);
-    final Marker marker = Marker(markerId: markerId, position: coordinates);
+    final uuId = Uuid().v4();
+    final uniqueId = uuId + markers;
+    final MarkerId markerId = MarkerId(uniqueId);
+    final Marker marker = Marker(
+        markerId: markerId, position: coordinates, onTap: _showMarkerOptions);
     setState(() {
       markerList.add(marker);
+      routeMarker = RouteMarker(
+          routeMarkerID: markerId.toString(),
+          caption: "",
+          coordinates: coordinates,
+          routeOrder: markerCount);
+      routeMarkerList.add(routeMarker);
+      print(routeMarker);
     });
   }
 
@@ -115,6 +130,23 @@ class _AddPostViewState extends State<AddPostView> {
     return result.placeDesc;
   }
 
+  void _showMarkerOptions() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AddRouteDataView()),
+    );
+  }
+
+  void _savePost() async {
+    String description = _postDescCon.text;
+    final RoutePost post = RoutePost(
+      userId: widget.currentUser,
+      description: description,
+      routeMarkers: routeMarkerList,
+    );
+    await DatabaseServices.addPost(post);
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -123,15 +155,7 @@ class _AddPostViewState extends State<AddPostView> {
         postDescFocus.unfocus();
       },
       child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        floatingActionButton: RoundedIconButton(
-          icon: Icons.add,
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddRouteDataView()),
-          ),
-        ),
-        // SpeedDialWidget(),
+        resizeToAvoidBottomInset: true,
         body: Stack(
           children: [
             buildGoogleMap(),
@@ -189,10 +213,51 @@ class _AddPostViewState extends State<AddPostView> {
                     margin: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
                     child: RoundedBasicIconButton(
                       icon: Icons.check,
-                      onPressed: () {},
+                      onPressed: _savePost,
                     ),
                   ),
                 ],
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                margin: EdgeInsets.symmetric(vertical: 30),
+                decoration: BoxDecoration(
+                  color: Colors.white60,
+                  borderRadius: BorderRadius.circular(20.0),
+                ),
+                width: MediaQuery.of(context).size.width * 0.9,
+                child: TextField(
+                  keyboardType: TextInputType.multiline,
+                  focusNode: postDescFocus,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'Write something here ....',
+                    hintMaxLines: 4,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(20.0),
+                      ),
+                      borderSide: BorderSide(
+                        color: Colors.grey,
+                        width: 2,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(20.0),
+                      ),
+                      borderSide: BorderSide(
+                        color: textLightColor,
+                        width: 2,
+                      ),
+                    ),
+                    // contentPadding: EdgeInsets.symmetric(horizontal: 15),
+                  ),
+                  controller: _postDescCon,
+                  maxLines: 4,
+                ),
               ),
             ),
           ],

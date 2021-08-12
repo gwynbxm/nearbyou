@@ -1,7 +1,7 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 16/7/21 3:51 PM
+ * Last modified 12/8/21 5:01 PM
  */
 
 import 'dart:async';
@@ -122,8 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     selectedLocation = true;
     setState(() {
-      routeMarker =
-          RouteMarker(initialPosition.toString(), null, coordinates, 0);
+      routeMarker = RouteMarker.withoutData(coordinates);
     });
   }
 
@@ -223,11 +222,15 @@ class _HomeScreenState extends State<HomeScreen> {
             MaterialPageRoute(
                 builder: (context) => AddPostView(
                       destPointData: routeMarker,
+                      currentUser: _auth.currentUser.uid,
                     )),
           )
         : Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AddPostView()),
+            MaterialPageRoute(
+                builder: (context) => AddPostView(
+                      currentUser: _auth.currentUser.uid,
+                    )),
           );
   }
 
