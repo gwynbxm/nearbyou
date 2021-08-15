@@ -1,7 +1,7 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 12/8/21 5:01 PM
+ * Last modified 15/8/21 9:00 PM
  */
 
 import 'dart:async';
@@ -61,6 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   var geoLocator = Geolocator();
   GoogleMapController googleMapController;
+  Completer<GoogleMapController> _completer = Completer();
 
   static const LatLng initialPosition = const LatLng(1.3649170, 103.8228720);
   LatLng _lastMapPosition = initialPosition;
@@ -104,6 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onMapCreated(GoogleMapController controller) {
+    _completer.complete(controller);
     googleMapController = controller;
   }
 
@@ -126,8 +128,9 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _animateCamera(GoogleMapController controller, LatLng position) {
-    controller.animateCamera(
+  Future<void> animateCamera(LatLng position) async {
+    final GoogleMapController googleMapController = await _completer.future;
+    googleMapController.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: position,
@@ -145,7 +148,8 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _getDetailsFromCoordinates(currLatLngPosition);
       _onAddMarker(currLatLngPosition);
-      _animateCamera(googleMapController, currLatLngPosition);
+      animateCamera(currLatLngPosition);
+      // _getNearbyFeeds(currLatLngPosition);
     });
   }
 
@@ -178,11 +182,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       _onAddMarker(coordinates);
-      googleMapController.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(target: coordinates, zoom: 14.0),
-        ),
-      );
+      animateCamera(coordinates);
+      // _getNearbyFeeds(coordinates);
     });
   }
 
@@ -197,7 +198,8 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _getDetailsFromCoordinates(point);
       _onAddMarker(point);
-      _animateCamera(googleMapController, point);
+      animateCamera(point);
+      // _getNearbyFeeds(point);
     });
   }
 
@@ -210,9 +212,11 @@ class _HomeScreenState extends State<HomeScreen> {
     var address =
         await Geocoder.local.findAddressesFromCoordinates(coordinates);
 
-    _placeName = address.first.featureName;
-    _placeAdd = address.first.addressLine;
-    _searchCon.text = address.first.addressLine;
+    setState(() {
+      _placeName = address.first.featureName;
+      _placeAdd = address.first.addressLine;
+      _searchCon.text = address.first.addressLine;
+    });
   }
 
   void createPost() {
@@ -233,6 +237,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     )),
           );
   }
+
+  // _getNearbyFeeds() async {
+  //   Stream<List<DocumentSnapshot>> stream = ;
+  // }
+
+  void togglePanel() => panelController.isPanelOpen
+      ? panelController.close()
+      : panelController.open();
 
   @override
   Widget build(BuildContext context) {
@@ -261,6 +273,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   controller: controller,
                   panelController: panelController,
                   child: buildPostFeed(context),
+                  onTap: () => togglePanel(),
                 ),
                 borderRadius: BorderRadius.vertical(
                   top: Radius.circular(18),
@@ -371,6 +384,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ),
                                   ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
                                   Align(
                                     alignment: Alignment.centerLeft,
                                     child: Text(
@@ -387,21 +403,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
+              SizedBox(
+                width: 15,
+                height: 15,
+              ),
+              Divider(
+                thickness: 1,
+                indent: 30,
+                endIndent: 30,
+              ),
+              SizedBox(
+                width: 15,
+                height: 15,
+              ),
               Flexible(
-                child: Container(
-                  child: ListView.builder(
-                      controller: scrollController,
-                      physics: AlwaysScrollableScrollPhysics(),
-                      primary: false,
-                      scrollDirection: Axis.vertical,
-                      // separatorBuilder: (context, index) => Divider(
-                      //       height: 0.5,
-                      //     ),
-                      shrinkWrap: true,
-                      itemCount: 10,
-                      itemBuilder: (BuildContext context, int index) =>
-                          buildCards(context, index)),
-                ),
+                child: Container(),
               )
             ],
           )
@@ -591,57 +607,5 @@ class _HomeScreenState extends State<HomeScreen> {
     _searchCon.dispose();
     googleMapController.dispose();
     super.dispose();
-  }
-
-  buildCards(BuildContext context, int index) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => RouteDetailsView()),
-            ),
-            child: ListTile(
-              leading: CircleAvatar(
-                radius: 24,
-                backgroundImage:
-                    AssetImage('assets/images/default-profile.png'),
-              ),
-              title: Text(
-                'primary text',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text('secondary text'),
-            ),
-          ),
-          //put media here
-          ButtonBar(
-            alignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              IconButton(
-                icon: Icon(
-                  Icons.thumb_up_alt_outlined,
-                ),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: Icon(Icons.comment),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: Icon(Icons.bookmark_border_outlined),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: Icon(Icons.share),
-                onPressed: () {},
-              ),
-            ],
-          )
-        ],
-      ),
-    );
   }
 }
