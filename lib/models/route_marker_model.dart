@@ -1,25 +1,26 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 12/8/21 5:35 PM
+ * Last modified 17/8/21 7:30 PM
  */
 
 import 'dart:io';
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:nearbyou/models/route_marker_img_model.dart';
 
 class RouteMarker {
   String routeMarkerID;
+  String title;
   String caption;
-  // List<ImageData> imageList;
+  List<String> imageList;
   LatLng coordinates;
   int routeOrder;
 
   RouteMarker({
     this.routeMarkerID,
+    this.title,
     this.caption,
-    // this.imageList,
+    this.imageList,
     this.coordinates,
     this.routeOrder,
   });
@@ -30,8 +31,9 @@ class RouteMarker {
 
   Map<String, dynamic> toMap() => {
         'routeMarkerId': routeMarkerID,
+        'title': title,
         'caption': caption,
-        // 'imageList': imageList.map((e) => e.toMap()).toList(),
+        'imageList': imageList,
         'coordinates': coordinates.toJson(),
         'routeOrder': routeOrder,
       };
@@ -39,8 +41,9 @@ class RouteMarker {
   factory RouteMarker.fromMap(Map<dynamic, dynamic> json) {
     return RouteMarker(
       routeMarkerID: json['routeMarkerId'],
+      title: json['title'],
       caption: json['caption'],
-      // imageList: json['imageList'],
+      imageList: json['imageList'],
       coordinates: json['coordinates'],
       routeOrder: json['routeOrder'],
     );
