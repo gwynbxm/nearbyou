@@ -1,7 +1,7 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 18/8/21 4:44 PM
+ * Last modified 18/8/21 4:51 PM
  */
 
 import 'dart:async';
@@ -152,7 +152,7 @@ class _AddPostViewState extends State<AddPostView> {
                     ),
                     title: Text('Add Details'),
                     onTap: () {
-                      _addRouteData(context);
+                      _addRouteData(context, routeMarker);
                     },
                   ),
                   ListTile(
@@ -190,7 +190,7 @@ class _AddPostViewState extends State<AddPostView> {
         });
   }
 
-  void _addRouteData(BuildContext context) async {
+  void _addRouteData(BuildContext context, RouteMarker routeMarker) async {
     final updatedMarkerData = await Navigator.push(
       context,
       MaterialPageRoute(

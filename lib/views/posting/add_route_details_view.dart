@@ -1,7 +1,7 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 18/8/21 4:45 PM
+ * Last modified 18/8/21 4:54 PM
  */
 
 import 'dart:io';
@@ -57,7 +57,6 @@ class _AddRouteDetailsViewState extends State<AddRouteDetailsView> {
                 child: Text('CANCEL'),
               ),
               TextButton(
-                //couldnt return back to add post view
                 onPressed: () => Navigator.of(context).pop(true),
                 child: Text('DISCARD'),
               ),
