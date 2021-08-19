@@ -18,18 +18,8 @@
 ### General Information
 This project was carried out as an FYP at Nanyang Technological University from January 2021 to November 2021.
 
-### Introduction
-
-### Background
-
 ### Technologies
 * Android Studio 4.1.2
-* FlutterFire
+* Google Cloud Firestore
 * Flutter SDK 2.0.6
 * Axure RP 9
-
-### Features
-
-### Prototypes
-
-### User Experience Studies
