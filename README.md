@@ -16,7 +16,7 @@
 </details>
 
 ### General Information
-This project was carried out as an FYP at Nanyang Technological University from January 2021 to November 2021.
+This project was carried out as an FYP at Nanyang Technological University from January 2021 to December 2021.
 
 ### Technologies
 * Android Studio 4.1.2
