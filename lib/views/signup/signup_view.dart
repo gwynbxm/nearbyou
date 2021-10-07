@@ -15,30 +15,31 @@ import 'package:nearbyou/utilities/ui/components/rounded_input_field.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_pwd_field.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
 import 'package:nearbyou/views/home/home_view.dart';
-import 'package:nearbyou/views/login/login_view.dart';
+import 'package:nearbyou/views/signin/signin_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class RegisterView extends StatelessWidget {
-  const RegisterView({Key key}) : super(key: key);
+class SignUpView extends StatelessWidget {
+  const SignUpView({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: RegisterAcc(),
+        body: SignUp(),
       ),
     );
   }
 }
 
-class RegisterAcc extends StatefulWidget {
-  const RegisterAcc({Key key}) : super(key: key);
+class SignUp extends StatefulWidget {
+  const SignUp({Key key}) : super(key: key);
 
   @override
-  _RegisterAccState createState() => _RegisterAccState();
+  _SignUpState createState() => _SignUpState();
 }
 
-class _RegisterAccState extends State<RegisterAcc> {
+class _SignUpState extends State<SignUp> {
   final _formKey = GlobalKey<FormState>();
 
   final _focusUsername = FocusNode();
@@ -51,25 +52,33 @@ class _RegisterAccState extends State<RegisterAcc> {
   TextEditingController _pwdCon = TextEditingController();
   TextEditingController _cfmPwdCon = TextEditingController();
 
-  bool _isHidden = true;
+  bool _isHiddenPwd = true;
+  bool _isHiddenCfmPwd = true;
 
-  void _toggle() {
+  void _togglePwd() {
     setState(() {
-      _isHidden = !_isHidden;
+      _isHiddenPwd = !_isHiddenPwd;
+    });
+  }
+
+  void _toggleCfmPwd() {
+    setState(() {
+      _isHiddenCfmPwd = !_isHiddenCfmPwd;
     });
   }
 
   void validateRegister() async {
     FormState form = _formKey.currentState;
     if (form.validate()) {
-      User user = await Auth().register(_emailCon.text, _pwdCon.text);
+      User user = await Auth()
+          .register(_emailCon.text, _pwdCon.text, _usernameCon.text);
       if (user != null) {
-        UserData userProfile =
-            UserData(username: _usernameCon.text, emailAddress: _emailCon.text);
+        UserData userProfile = UserData(username: _usernameCon.text);
         await DatabaseServices.addUser(user.uid, userProfile);
+
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+          MaterialPageRoute(builder: (context) => SignInView()),
         );
       }
     } else {
@@ -127,40 +136,41 @@ class _RegisterAccState extends State<RegisterAcc> {
                         ),
                         RoundedPasswordField(
                           controller: _pwdCon,
-                          obscureText: _isHidden,
+                          obscureText: _isHiddenPwd,
                           onChanged: (value) {},
                           focusNode: _focusPwd,
                           hintText: "Password",
                           labelText: "Password",
                           suffixIcon: IconButton(
-                            icon: Icon(_isHidden
+                            icon: Icon(_isHiddenPwd
                                 ? Icons.visibility
                                 : Icons.visibility_off),
                             color: primaryColor,
-                            onPressed: () => _toggle(),
+                            onPressed: () => _togglePwd(),
                           ),
                           validator: (value) =>
                               Validator.validatePassword(value),
                         ),
                         RoundedPasswordField(
                           controller: _cfmPwdCon,
-                          obscureText: _isHidden,
+                          obscureText: _isHiddenCfmPwd,
                           onChanged: (value) {},
                           focusNode: _focusCfmPwd,
                           hintText: "Confirm Password",
                           labelText: "Confirm Password",
                           suffixIcon: IconButton(
-                            icon: Icon(_isHidden
+                            icon: Icon(_isHiddenCfmPwd
                                 ? Icons.visibility
                                 : Icons.visibility_off),
                             color: primaryColor,
-                            onPressed: () => _toggle(),
+                            onPressed: () => _toggleCfmPwd(),
                           ),
                           validator: (value) => Validator.validateCfmPassword(
                               _pwdCon.text, _cfmPwdCon.text),
                         ),
                         RoundedButton(
                           onPressed: () => validateRegister(),
+                          color: primaryColor,
                           text: "SIGN UP",
                         ),
                         SizedBox(height: 15.0),
@@ -182,7 +192,7 @@ class _RegisterAccState extends State<RegisterAcc> {
                               onTap: () => Navigator.push(
                                   context,
                                   new MaterialPageRoute(
-                                      builder: (context) => new LoginView())),
+                                      builder: (context) => new SignInView())),
                               child: Text(
                                 "Sign In",
                                 style: TextStyle(
@@ -206,7 +216,6 @@ class _RegisterAccState extends State<RegisterAcc> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     _usernameCon.dispose();
     _emailCon.dispose();
