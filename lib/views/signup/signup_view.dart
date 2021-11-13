@@ -10,6 +10,7 @@ import 'package:nearbyou/models/user_profile_model.dart';
 import 'package:nearbyou/utilities/helper/validator.dart';
 import 'package:nearbyou/utilities/services/firebase_services/authentication.dart';
 import 'package:nearbyou/utilities/services/firebase_services/firestore.dart';
+import 'package:nearbyou/utilities/ui/components/custom_dialog_box.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_button.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_input_field.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_pwd_field.dart';
@@ -54,6 +55,7 @@ class _SignUpState extends State<SignUp> {
 
   bool _isHiddenPwd = true;
   bool _isHiddenCfmPwd = true;
+  bool isLoading = false;
 
   void _togglePwd() {
     setState(() {
@@ -67,7 +69,7 @@ class _SignUpState extends State<SignUp> {
     });
   }
 
-  void validateRegister() async {
+  validateRegister() async {
     FormState form = _formKey.currentState;
     if (form.validate()) {
       User user = await Auth()
@@ -76,10 +78,47 @@ class _SignUpState extends State<SignUp> {
         UserData userProfile = UserData(username: _usernameCon.text);
         await DatabaseServices.addUser(user.uid, userProfile);
 
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => SignInView()),
-        );
+        return showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return CustomDialogBox(
+                icon: Icons.auto_awesome,
+                bgAvatarColor: iconColor,
+                iconColor: Colors.white,
+                dialogTitle: 'Registration Successful!',
+                dialogSubtitle:
+                    'Thank you for signing up with Nearbyou! You may proceed to verify your email before signing in!',
+                rightButtonText: 'Dismiss',
+                rightButtonTextColor: primaryColor,
+                onPressedRightButton: () {
+                  Navigator.of(context).pop();
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => SignInView()));
+                },
+              );
+            });
+      } else {
+        return showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return CustomDialogBox(
+                icon: Icons.warning,
+                bgAvatarColor: Colors.redAccent,
+                iconColor: Colors.white,
+                dialogTitle: 'Existing Account found!',
+                dialogSubtitle:
+                    'Email has already been taken! Please try another email or sign in if you have registered!',
+                leftButtonText: 'Cancel',
+                rightButtonText: 'Sign In',
+                rightButtonTextColor: primaryColor,
+                leftButtonTextColor: Colors.black,
+                onPressedLeftButton: () => Navigator.of(context).pop(),
+                onPressedRightButton: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                },
+              );
+            });
       }
     } else {
       print('Form is invalid');

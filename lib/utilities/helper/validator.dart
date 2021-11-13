@@ -29,7 +29,7 @@ class Validator {
 
   static String validateCfmPassword(String pwd, String cfmPwd) {
     if (cfmPwd.isEmpty)
-      return 'Please enter to confirm password';
+      return 'Password cannot be blank';
     else if (cfmPwd != pwd)
       return 'Password is not matching';
     else

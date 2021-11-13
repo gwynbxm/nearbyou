@@ -11,6 +11,7 @@ import 'package:nearbyou/models/user_profile_model.dart';
 import 'package:nearbyou/utilities/helper/validator.dart';
 import 'package:nearbyou/utilities/services/firebase_services/authentication.dart';
 import 'package:nearbyou/utilities/services/firebase_services/firestore.dart';
+import 'package:nearbyou/utilities/ui/components/custom_dialog_box.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_button.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_input_field.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_pwd_field.dart';
@@ -94,24 +95,22 @@ class _SignInAuthState extends State<SignInAuth> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Verify your account"),
-          content: Text("Please verify account in the link sent to email"),
-          actions: <Widget>[
-            TextButton(
-              child: Text("RESEND"),
-              onPressed: () {
-                Navigator.of(context).pop();
-                Auth().sendVerificationEmail();
-              },
-            ),
-            TextButton(
-              child: Text("DISMISS"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
+        return CustomDialogBox(
+          icon: Icons.lock,
+          bgAvatarColor: iconColor,
+          iconColor: Colors.white,
+          dialogTitle: 'Verify your account',
+          dialogSubtitle:
+              'Please enter correct email address and password. Also, verify account through the link sent to your email if you have not done so!',
+          leftButtonText: 'Cancel',
+          rightButtonText: 'Resend',
+          leftButtonTextColor: Colors.black,
+          rightButtonTextColor: primaryColor,
+          onPressedLeftButton: () => Navigator.of(context).pop(),
+          onPressedRightButton: () {
+            Navigator.of(context).pop();
+            Auth().sendVerificationEmail();
+          },
         );
       },
     );
@@ -121,9 +120,13 @@ class _SignInAuthState extends State<SignInAuth> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Reset Password"),
-          content: Form(
+        return CustomDialogBox(
+          icon: Icons.lock,
+          bgAvatarColor: iconColor,
+          iconColor: Colors.white,
+          dialogTitle: 'Reset Password?',
+          dialogSubtitle: 'Enter your email address to reset password.',
+          widget: Form(
             key: _resetPwdEmailKey,
             child: TextFormField(
                 keyboardType: TextInputType.emailAddress,
@@ -131,21 +134,15 @@ class _SignInAuthState extends State<SignInAuth> {
                 controller: _pwdResetEmailCon,
                 validator: (value) => Validator.validateEmail(value)),
           ),
-          actions: <Widget>[
-            TextButton(
-              child: Text("SEND"),
-              onPressed: () {
-                Navigator.of(context).pop();
-                Auth().sendPasswordResetEmail(_pwdResetEmailCon.text);
-              },
-            ),
-            TextButton(
-              child: Text("DISMISS"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
+          leftButtonText: 'Cancel',
+          rightButtonText: 'Send',
+          leftButtonTextColor: Colors.black,
+          rightButtonTextColor: primaryColor,
+          onPressedLeftButton: () => Navigator.of(context).pop(),
+          onPressedRightButton: () {
+            Navigator.of(context).pop();
+            Auth().sendPasswordResetEmail(_pwdResetEmailCon.text);
+          },
         );
       },
     );
