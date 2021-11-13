@@ -5,23 +5,19 @@
  */
 
 import 'dart:async';
-import 'dart:collection';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:flutter_google_places/flutter_google_places.dart';
-import 'package:geocoder/geocoder.dart';
-import 'package:nearbyou/models/geometry_model.dart';
+// import 'package:flutter_google_places/flutter_google_places.dart';
+import 'package:geocoder/geocoder.dart' as geocoder;
 import 'package:nearbyou/models/places_model.dart';
 import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
-import 'package:nearbyou/models/user_profile_model.dart';
 import 'package:nearbyou/utilities/constants/constants.dart';
 import 'package:nearbyou/utilities/services/firebase_services/authentication.dart';
 import 'package:nearbyou/utilities/services/api_services/google_places.dart';
@@ -29,7 +25,8 @@ import 'package:nearbyou/utilities/services/firebase_services/firestore.dart';
 import 'package:nearbyou/utilities/ui/components/panel_widget.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_icon_button.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
-import 'package:nearbyou/views/home/route_details_view.dart';
+import 'package:nearbyou/views/collections/saved_collection_view.dart';
+import 'package:nearbyou/views/home/components/route_marker_widget.dart';
 import 'package:nearbyou/views/posting/add_post_view.dart';
 import 'package:nearbyou/views/home/components/address_search.dart';
 import 'package:nearbyou/views/profile/user_profile_view.dart';
@@ -65,21 +62,34 @@ class _HomeScreenState extends State<HomeScreen> {
 
   static const LatLng initialPosition = const LatLng(1.3649170, 103.8228720);
   LatLng _lastMapPosition = initialPosition;
-  Set<Marker> _markers = Set<Marker>();
+
+  Map<MarkerId, Marker> _markers = <MarkerId, Marker>{};
+  MarkerId selectedMarker;
+
+  // List<GeoPoint> markersFromFirestore = [];
 
   final ScrollController scrollController = ScrollController();
 
   String _placeName = '';
   String _placeAdd = '';
-  bool selectedLocation = false;
+  bool isLocationSelected = false;
+  bool isDisplayed = false;
+  bool isLoading = false;
   SharedPreferences sharedPreferences;
   String displayEmail;
 
   RouteMarker routeMarker;
+  String _markerTitle = '';
+  String _markerCaption = '';
+
+  List<RouteMarker> routeMarkerList = [];
+  List<String> imgList = [];
+
+  List<RouteMarker> relatedNearbyMarkerList = [];
+  // RouteCoordinates routeCoordinates = RouteCoordinates();
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
     // getCurrentUser();
@@ -113,27 +123,49 @@ class _HomeScreenState extends State<HomeScreen> {
     _lastMapPosition = position.target;
   }
 
-  void _onAddMarker(LatLng coordinates) {
+  void _onAddMarker(GeoPoint coordinates) {
     _markers.clear();
-    _markers.add(
-      Marker(
-        markerId: MarkerId(initialPosition.toString()),
-        position: coordinates,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
-      ),
+
+    final MarkerId id = MarkerId(initialPosition.toString());
+    _markers[id] = Marker(
+      markerId: id,
+      position: LatLng(coordinates.latitude, coordinates.longitude),
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
     );
-    selectedLocation = true;
+    isLocationSelected = true;
     setState(() {
-      routeMarker = RouteMarker.withoutData(coordinates);
+      // markersOnMap.add(userMarker);
+      routeMarker = RouteMarker.withoutData(
+          GeoPoint(coordinates.latitude, coordinates.longitude));
+      // routeCoordinates.setGeoPoints = GeoPoint(coordinates.latitude, coordinates.longitude);
+      // routeCoordinates.setGeoHash =
+      //     routeMarker = RouteMarker.withoutData(coordinates);
+      // getNearbyPlaces(coordinates);
     });
   }
 
-  Future<void> animateCamera(LatLng position) async {
+  void addNearestMarker(RouteMarker routeMarker) {
+    double lat = routeMarker.coordinates.latitude;
+    double lng = routeMarker.coordinates.longitude;
+    MarkerId id = MarkerId(routeMarker.markerID);
+    final Marker marker = Marker(
+        markerId: id,
+        position: LatLng(lat, lng),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+        onTap: () => _onNearestMarkerTapped(id));
+
+    setState(() {
+      isLocationSelected = true;
+      _markers[id] = marker;
+    });
+  }
+
+  Future<void> animateCamera(GeoPoint position) async {
     final GoogleMapController googleMapController = await _completer.future;
     googleMapController.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
-          target: position,
+          target: LatLng(position.latitude, position.longitude),
           zoom: 18,
         ),
       ),
@@ -143,13 +175,15 @@ class _HomeScreenState extends State<HomeScreen> {
   void _getUserCurrentLocation() async {
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-    LatLng currLatLngPosition = LatLng(position.latitude, position.longitude);
+    // LatLng currLatLngPosition = LatLng(position.latitude, position.longitude);
+
+    GeoPoint currPosition = GeoPoint(position.latitude, position.longitude);
 
     setState(() {
-      _getDetailsFromCoordinates(currLatLngPosition);
-      _onAddMarker(currLatLngPosition);
-      animateCamera(currLatLngPosition);
-      // _getNearbyFeeds(currLatLngPosition);
+      _getDetailsFromCoordinates(position.latitude, position.longitude);
+      _onAddMarker(currPosition);
+      animateCamera(currPosition);
+      getNearbyPlaces(currPosition);
     });
   }
 
@@ -164,9 +198,10 @@ class _HomeScreenState extends State<HomeScreen> {
           await PlaceApiProvider(sessionToken).getPlacesDetails(result.placeId);
 
       setState(() {
-        _searchCon.text = result.placeDesc;
+        // TODO: feature name retrieved from geocoder is different from google places
+        _searchCon.text = result.placeName;
         panelController.open();
-        selectedLocation = true;
+        isLocationSelected = true;
         _placeName = placesDetails.placeName;
         _placeAdd = placesDetails.placeAddress;
         _getPlacesDetailsFromSearch(placesDetails);
@@ -178,49 +213,53 @@ class _HomeScreenState extends State<HomeScreen> {
     var lat = places.geometry.locationData.lat;
     var lng = places.geometry.locationData.lng;
 
-    LatLng coordinates = LatLng(lat, lng);
+    GeoPoint coordinates = GeoPoint(lat, lng);
+    // LatLng coordinates = LatLng(lat, lng);
 
     setState(() {
       _onAddMarker(coordinates);
       animateCamera(coordinates);
-      // _getNearbyFeeds(coordinates);
+      getNearbyPlaces(coordinates);
     });
   }
 
   void clearSearch() {
     _searchCon.clear();
     _markers.clear();
-    selectedLocation = false;
+    isLocationSelected = false;
     panelController.close();
   }
 
-  Future<void> _handleTap(LatLng point) async {
+  Future<void> _onMapTapped(LatLng point) async {
+    final coordinates = GeoPoint(point.latitude, point.longitude);
     setState(() {
-      _getDetailsFromCoordinates(point);
-      _onAddMarker(point);
-      animateCamera(point);
-      // _getNearbyFeeds(point);
+      _getDetailsFromCoordinates(point.latitude, point.longitude);
+      _onAddMarker(coordinates);
+      animateCamera(coordinates);
+      getNearbyPlaces(coordinates);
     });
   }
 
-  void _getDetailsFromCoordinates(LatLng point) async {
-    double lat = point.latitude;
-    double lng = point.longitude;
+  _getDetailsFromCoordinates(double lat, double lng) async {
+    // double lat = point.latitude;
+    // double lng = point.longitude;
 
-    Coordinates coordinates = Coordinates(lat, lng);
+    final coordinates = geocoder.Coordinates(lat, lng);
+    // Coordinates coordinates = Coordinates(lat, lng);
 
     var address =
-        await Geocoder.local.findAddressesFromCoordinates(coordinates);
+        await geocoder.Geocoder.local.findAddressesFromCoordinates(coordinates);
 
     setState(() {
+      // TODO: feature name retrieved from geocoder is different from google places
       _placeName = address.first.featureName;
       _placeAdd = address.first.addressLine;
-      _searchCon.text = address.first.addressLine;
+      _searchCon.text = address.first.featureName;
     });
   }
 
   void createPost() {
-    selectedLocation
+    isLocationSelected
         ? Navigator.push(
             context,
             MaterialPageRoute(
@@ -233,18 +272,68 @@ class _HomeScreenState extends State<HomeScreen> {
             context,
             MaterialPageRoute(
                 builder: (context) => AddPostView(
-                      currentUser: _auth.currentUser.uid,
+                      currentUser: _auth.currentUser.uid.toString(),
                     )),
           );
   }
 
-  // _getNearbyFeeds() async {
-  //   Stream<List<DocumentSnapshot>> stream = ;
-  // }
-
   void togglePanel() => panelController.isPanelOpen
       ? panelController.close()
       : panelController.open();
+
+  // retrieve markers from firestore that is nearby the center coordinates
+  void getNearbyPlaces(GeoPoint center) async {
+    final result = await DatabaseServices.getNearbyFBMarkers(center);
+    // final result = await DatabaseServices.getNearby(center);
+    for (int i = 0; i < result.length; i++) {
+      final MarkerId id = MarkerId(result[i].markerID);
+      addNearestMarker(result[i]);
+    }
+  }
+
+  // on tap nearest route marker
+  void _onNearestMarkerTapped(MarkerId markerId) {
+    //TODO : unable to display route data
+    final Marker tappedMarker = _markers[markerId];
+    if (tappedMarker != null) {
+      setState(() {
+        final MarkerId previousMarkerId = selectedMarker;
+        if (previousMarkerId != null &&
+            _markers.containsKey(previousMarkerId)) {
+          final Marker resetOld = _markers[previousMarkerId].copyWith(
+              iconParam: BitmapDescriptor.defaultMarkerWithHue(
+                  BitmapDescriptor.hueOrange));
+          _markers[previousMarkerId] = resetOld;
+        }
+        selectedMarker = markerId;
+        final Marker newMarker = tappedMarker.copyWith(
+            iconParam: BitmapDescriptor.defaultMarkerWithHue(
+                BitmapDescriptor.hueGreen),
+            onTapParam: () => _getDetailsFromFirestore(GeoPoint(
+                tappedMarker.position.latitude,
+                tappedMarker.position.longitude)));
+
+        _markers[markerId] = newMarker;
+      });
+    }
+
+    setState(() {
+      _getDetailsFromCoordinates(
+          tappedMarker.position.latitude, tappedMarker.position.longitude);
+    });
+  }
+
+  // get nearest post marker details of the same coordinates from firestore to display on sliding panel
+  _getDetailsFromFirestore(GeoPoint points) async {
+    QuerySnapshot snapshot = await postMarkersCollection
+        .where('coordinates', isEqualTo: points)
+        .get();
+
+    setState(() {
+      relatedNearbyMarkerList =
+          snapshot.docs.map((doc) => RouteMarker.fromDocument(doc)).toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -272,7 +361,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 panelBuilder: (controller) => PanelWidget(
                   controller: controller,
                   panelController: panelController,
-                  child: buildPostFeed(context),
+                  child: buildInformation(context),
                   onTap: () => togglePanel(),
                 ),
                 borderRadius: BorderRadius.vertical(
@@ -321,7 +410,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           decoration: InputDecoration(
                             hintText: "Search ....",
                             hintStyle: TextStyle(color: Colors.grey),
-                            suffixIcon: selectedLocation
+                            suffixIcon: isLocationSelected
                                 ? IconButton(
                                     onPressed: clearSearch,
                                     icon: Icon(Icons.clear),
@@ -357,79 +446,177 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Column buildPostFeed(BuildContext context) {
-    return selectedLocation
-        ? Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Wrap(
-                children: [
-                  Row(
+  Container buildInformation(BuildContext context) {
+    return isLocationSelected
+        ?
+        // Column(
+        //         mainAxisSize: MainAxisSize.min,
+        //         children: [
+        //           Wrap(
+        //             children: [
+        //               Row(
+        //                 children: [
+        //                   Expanded(
+        //                     flex: 3,
+        //                     child: Padding(
+        //                         padding:
+        //                             EdgeInsets.only(top: 10, left: 30, right: 30),
+        //                         child: SingleChildScrollView(
+        //                           child: Column(
+        //                             children: [
+        //                               Align(
+        //                                 alignment: Alignment.centerLeft,
+        //                                 child: Text(
+        //                                   '$_placeName',
+        //                                   style: TextStyle(
+        //                                     fontWeight: FontWeight.bold,
+        //                                     fontSize: 24,
+        //                                   ),
+        //                                 ),
+        //                               ),
+        //                               SizedBox(
+        //                                 height: 10,
+        //                               ),
+        //                               Align(
+        //                                 alignment: Alignment.centerLeft,
+        //                                 child: Text(
+        //                                   '$_placeAdd',
+        //                                   style: TextStyle(fontSize: 15),
+        //                                 ),
+        //                               ),
+        //                             ],
+        //                           ),
+        //                         )),
+        //                   ),
+        //                   buildPostButton(context),
+        //                 ],
+        //               ),
+        //             ],
+        //           ),
+        //           SizedBox(
+        //             width: 15,
+        //             height: 15,
+        //           ),
+        //           Divider(
+        //             thickness: 1,
+        //             indent: 30,
+        //             endIndent: 30,
+        //           ),
+        //           SizedBox(
+        //             width: 15,
+        //             height: 15,
+        //           ),
+        //           Flexible(
+        //             child: Container(
+        //                 //place timeline of post
+        //                 // child: StreamBuilder<QuerySnapshot>(
+        //                 //   stream: DatabaseServices.getNearbyMarkers(),
+        //                 //   builder: (context, snapshot) {
+        //                 //     if (!snapshot.hasData) {
+        //                 //       return Container(
+        //                 //           alignment: FractionalOffset.center,
+        //                 //           child: CircularProgressIndicator());
+        //                 //     }
+        //                 //     return Container();
+        //                 //   },
+        //                 // ),
+        //                 ),
+        //           )
+        //         ],
+        //       )
+        Container(
+            child: Stack(
+              children: [
+                Container(
+                  child: Column(
                     children: [
-                      Expanded(
-                        flex: 3,
-                        child: Padding(
-                            padding:
-                                EdgeInsets.only(top: 10, left: 30, right: 30),
-                            child: SingleChildScrollView(
-                              child: Column(
-                                children: [
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      '$_placeName',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 24,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: 10,
-                                  ),
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      '$_placeAdd',
-                                      style: TextStyle(fontSize: 15),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Padding(
+                                padding: EdgeInsets.only(
+                                    top: 10, left: 30, right: 30),
+                                child: buildPlaceNameAndAdd(context)),
+                            flex: 3,
+                          ),
+                          buildPostButton(context),
+                        ],
                       ),
-                      buildPostButton(context),
+                      SizedBox(
+                        width: 15,
+                        height: 15,
+                      ),
+                      Divider(
+                        thickness: 1,
+                        indent: 30,
+                        endIndent: 30,
+                      ),
+                      SizedBox(
+                        width: 15,
+                        height: 15,
+                      ),
                     ],
                   ),
-                ],
-              ),
-              SizedBox(
-                width: 15,
-                height: 15,
-              ),
-              Divider(
-                thickness: 1,
-                indent: 30,
-                endIndent: 30,
-              ),
-              SizedBox(
-                width: 15,
-                height: 15,
-              ),
-              Flexible(
-                child: Container(),
-              )
-            ],
+                ),
+                Container(
+                  margin: EdgeInsets.only(top: 110),
+                  child: SingleChildScrollView(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      physics: NeverScrollableScrollPhysics(),
+                      primary: false,
+                      scrollDirection: Axis.vertical,
+                      shrinkWrap: true,
+                      itemCount: relatedNearbyMarkerList.length,
+                      itemBuilder: (context, index) {
+                        return RouteMarkerWidget(
+                            relatedNearbyMarkerList[index]);
+                      },
+                    ),
+                    // buildRouteInfo(context),
+                  ),
+                )
+              ],
+            ),
           )
-        : Column(
-            children: [
-              Wrap(
-                children: [
-                  buildStartingSlideUpInfo(context),
-                ],
-              ),
-            ],
+        : Container(
+            child: Column(
+              children: [
+                Wrap(
+                  children: [
+                    buildStartingSlideUpInfo(context),
+                  ],
+                ),
+              ],
+            ),
           );
+  }
+
+  Column buildPlaceNameAndAdd(BuildContext context) {
+    return Column(
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            '$_placeName',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 24,
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 10,
+        ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            '$_placeAdd',
+            style: TextStyle(fontSize: 15),
+          ),
+        ),
+      ],
+    );
   }
 
   Row buildStartingSlideUpInfo(BuildContext context) {
@@ -467,6 +654,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   GoogleMap buildGoogleMap() {
+    final MarkerId selectedId = selectedMarker;
     return GoogleMap(
       onMapCreated: _onMapCreated,
       myLocationButtonEnabled: false,
@@ -481,9 +669,10 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       mapType: MapType.normal,
       // google map type: satellite/hybrid/normal/terrain
-      markers: _markers,
+      // markers: _marker,
+      markers: Set<Marker>.of(_markers.values),
       onCameraMove: _onCameraMove,
-      onTap: _handleTap,
+      onTap: _onMapTapped,
     );
   }
 
@@ -492,67 +681,71 @@ class _HomeScreenState extends State<HomeScreen> {
       child: SafeArea(
         child: ListView(
           children: [
-            FutureBuilder(
-              future: DatabaseServices.getUser(_auth.currentUser.uid),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Container(
-                      alignment: FractionalOffset.center,
-                      child: CircularProgressIndicator());
-                }
-
-                UserData userData = UserData.fromDocument(snapshot.data);
-                return UserAccountsDrawerHeader(
-                  currentAccountPicture: CircleAvatar(
-                    backgroundColor: Colors.white,
-                    backgroundImage: userData?.profilePhoto?.isEmpty ?? true
-                        ? AssetImage('assets/images/default-profile.png')
-                        : NetworkImage(userData.profilePhoto),
-                  ),
-                  accountName: Text(userData.username),
-                  accountEmail: Text(displayEmail),
-                  arrowColor: Colors.white,
-                  onDetailsPressed: () {},
-                  decoration: BoxDecoration(
-                      color: bgColor,
-                      borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(20),
-                          bottomRight: Radius.circular(20))),
-                );
-              },
-            ),
-            // UserAccountsDrawerHeader(
-            //   currentAccountPicture: CircleAvatar(
-            //     backgroundColor: Colors.white,
-            //   ),
-            //   accountName: Text('gwyn'),
-            //   accountEmail: Text(displayEmail),
-            //   arrowColor: Colors.white,
-            //   onDetailsPressed: () {},
-            //   decoration: BoxDecoration(
-            //       color: bgColor,
-            //       borderRadius: BorderRadius.only(
-            //           bottomLeft: Radius.circular(20),
-            //           bottomRight: Radius.circular(20))),
+            // FutureBuilder(
+            //   future: DatabaseServices.getUser(_auth.currentUser.uid),
+            //   builder: (context, snapshot) {
+            //     if (!snapshot.hasData) {
+            //       return Container(
+            //           alignment: FractionalOffset.center,
+            //           child: CircularProgressIndicator());
+            //     }
+            //
+            //     UserData userData = UserData.fromDocument(snapshot.data);
+            //     return UserAccountsDrawerHeader(
+            //       currentAccountPicture: CircleAvatar(
+            //         backgroundColor: Colors.white,
+            //         backgroundImage: userData?.profilePhoto?.isEmpty ?? true
+            //             ? AssetImage('assets/images/default-profile.png')
+            //             : NetworkImage(userData.profilePhoto),
+            //       ),
+            //       accountName: Text(userData.username),
+            //       accountEmail: Text(userData.emailAddress),
+            //       arrowColor: Colors.white,
+            //       onDetailsPressed: () {},
+            //       decoration: BoxDecoration(
+            //           color: bgColor,
+            //           borderRadius: BorderRadius.only(
+            //               bottomLeft: Radius.circular(20),
+            //               bottomRight: Radius.circular(20))),
+            //     );
+            //   },
             // ),
+            UserAccountsDrawerHeader(
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: Colors.white,
+                backgroundImage: _auth.currentUser.photoURL.isEmpty ?? true
+                    ? AssetImage('assets/images/default-profile.png')
+                    : NetworkImage(_auth.currentUser.photoURL),
+              ),
+              accountName: Text(_auth.currentUser
+                  .displayName), // TODO: Resolve the problem of google sign-in & email sign-in displayname/username issue
+              accountEmail: Text(_auth.currentUser.email),
+              arrowColor: Colors.white,
+              onDetailsPressed: () {},
+              decoration: BoxDecoration(
+                  color: bgColor,
+                  borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20))),
+            ),
             DrawerItem(
               icon: Icons.person_outline_outlined,
               text: 'Profile',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ProfileView()),
+                MaterialPageRoute(
+                    builder: (context) =>
+                        ProfileView(userId: _auth.currentUser.uid.toString())),
               ),
             ),
-            // DrawerItem(
-            //   icon: Icons.star_border_outlined,
-            //   text: 'Feed',
-            //   onTap: () {},
-            // ),
             DrawerItem(
-              icon: Icons.bookmark_border_outlined,
-              text: 'Saved Collections',
-              onTap: () =>
-                  Navigator.pushReplacementNamed(context, '/collections'),
+              icon: Icons.chat_outlined,
+              text: 'Chat',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SavedCollectionView()),
+              ),
+              // Navigator.pushReplacementNamed(context, '/collections'),
             ),
             Divider(
               height: 20,
@@ -580,10 +773,6 @@ class _HomeScreenState extends State<HomeScreen> {
               indent: 20,
               endIndent: 20,
             ),
-            // DrawerItem(
-            //   icon: Icons.info_outline,
-            //   text: 'Help ',
-            // ),
             DrawerItem(
                 icon: Icons.logout,
                 text: 'Log Out',
@@ -592,6 +781,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   sharedPreferences.setBool('login', true);
                   await Auth().signOut();
                   Navigator.popAndPushNamed(context, '/login');
+                  // Navigator.pop(context);
                 }),
           ],
         ),
@@ -601,9 +791,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
-    // _searchCon.dispose();
-    // searchBarCon.dispose();
     _searchCon.dispose();
     googleMapController.dispose();
     super.dispose();
