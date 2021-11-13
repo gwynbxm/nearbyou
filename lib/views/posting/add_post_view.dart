@@ -5,33 +5,25 @@
  */
 
 import 'dart:async';
-import 'dart:collection';
-import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:nearbyou/models/places_model.dart';
+import 'package:nearbyou/models/route_coordinates_model.dart';
 import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/models/route_post_model.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
-import 'package:nearbyou/models/user_profile_model.dart';
-import 'package:nearbyou/utilities/constants/constants.dart';
 import 'package:nearbyou/utilities/services/firebase_services/firestore.dart';
-import 'package:nearbyou/utilities/ui/components/rounded_navi_icon_button.dart';
-import 'package:nearbyou/utilities/ui/components/rounded_icon_button.dart';
+import 'package:nearbyou/utilities/ui/components/custom_dialog_box.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
 import 'package:nearbyou/views/posting/add_route_details_view.dart';
-import 'package:nearbyou/views/posting/components/speed_dial_widget.dart';
 import 'package:nearbyou/views/home/components/address_search.dart';
-import 'package:nearbyou/views/home/home_view.dart';
-import 'package:nearbyou/views/posting/edit_route_view.dart';
 import 'package:uuid/uuid.dart';
 
-import 'components/divider_widget.dart';
-import 'components/search_text_field.dart';
-
 class AddPostView extends StatefulWidget {
-  final String currentUser;
+  final String
+      currentUser; //TODO: cannot capture user id to save into firestore!!!
   final RouteMarker destPointData;
 
   const AddPostView({
@@ -57,23 +49,52 @@ class _AddPostViewState extends State<AddPostView> {
   Completer<GoogleMapController> _completer = Completer();
 
   LatLng _lastMapPosition = initialPosition;
-  List<Marker> markerList = [];
+  List<Marker> markerIconList = [];
+  Map<MarkerId, Marker> _markers = <MarkerId, Marker>{};
   RouteMarker routeMarker;
   List<RouteMarker> routeMarkerList = [];
+  String markerDocId;
+  List<String> routeMarkerIdsList = [];
   List<RoutePost> routePostList = [];
 
-  bool selectedLocation = false;
+  MarkerId selectedMarker;
+
+  bool isLocationSelected = false;
+  bool isMarkerAdded = false;
 
   @override
   void initState() {
-    // TODO: implement initState
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CustomDialogBox(
+              icon: Icons.add_location_alt,
+              bgAvatarColor: primaryColor,
+              iconColor: Colors.white,
+              dialogTitle: 'Lets Get Started!', //lets get started!
+              dialogSubtitle:
+                  'Create your very own shortcut routes by tapping on the map!',
+              onPressedRightButton: () => Navigator.of(context).pop(),
+              rightButtonText: 'Dismiss',
+              rightButtonTextColor: colorS2C1,
+            );
+          });
+    });
     if (widget.destPointData != null) {
-      selectedLocation = true;
+      isLocationSelected = true;
       _destPointCon.text = widget.destPointData.coordinates.toString();
 
+      double lat = widget.destPointData.coordinates.latitude;
+      double lng = widget.destPointData.coordinates.longitude;
+      //
+      // double lat = widget.destPointData.coordinates.geoPoint.latitude;
+      // double lng = widget.destPointData.coordinates.geoPoint.longitude;
+
       setState(() {
-        _onAddMarker(widget.destPointData.coordinates);
+        _onAddMarker(LatLng(lat, lng));
         animateCamera(widget.destPointData.coordinates);
+        // animateCamera(widget.destPointData.coordinates.geoPoint);
       });
     }
     super.initState();
@@ -89,33 +110,46 @@ class _AddPostViewState extends State<AddPostView> {
   }
 
   void _onAddMarker(LatLng coordinates) {
-    var markerCount = markerList.length + 1;
+    var markerCount = markerIconList.length + 1;
     String markers = markerCount.toString();
     final uuId = Uuid().v4();
-    final uniqueId = uuId + markers;
-    final MarkerId markerId = MarkerId(uniqueId);
+    final uniqueMarkerId = uuId + markers;
+    final MarkerId markerId = MarkerId(uniqueMarkerId);
+
+    //creates a marker look
     final Marker marker = Marker(
-        markerId: markerId,
-        position: coordinates,
-        onTap: () =>
-            _manageMarkerData(context, markerId, coordinates, markerCount));
+      markerId: markerId,
+      position: coordinates,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+      onTap: () {
+        _onMarkerTapped(markerId);
+      },
+    );
     setState(() {
-      markerList.add(marker); //marker to the map
+      // display added marker icon
+      _markers[markerId] = marker;
+      // add marker object to the map and to the temporary list of markers
+      markerIconList.add(marker);
+
+      //update the marker object
       routeMarker = RouteMarker(
-          routeMarkerID: markerId.toString(),
-          coordinates: coordinates,
+          markerID: markerId.toString(),
+          coordinates: GeoPoint(coordinates.latitude, coordinates.longitude),
           routeOrder: markerCount);
+
+      //add marker object to the list of markers
       routeMarkerList.add(routeMarker);
     });
   }
 
-  Future<void> animateCamera(LatLng position) async {
+  Future<void> animateCamera(GeoPoint position) async {
     final GoogleMapController googleMapController = await _completer.future;
     googleMapController.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
-          target: position,
+          // target: position,
           zoom: 18,
+          target: LatLng(position.latitude, position.longitude),
         ),
       ),
     );
@@ -133,11 +167,46 @@ class _AddPostViewState extends State<AddPostView> {
     return result.placeDesc;
   }
 
-  _manageMarkerData(context, MarkerId id, LatLng coordinates, int routeOrder) {
-    RouteMarker routeMarker = RouteMarker(
-        routeMarkerID: id.toString(),
-        coordinates: coordinates,
-        routeOrder: routeOrder);
+  Future<void> _onMapTapped(LatLng coordinates) async {
+    setState(() {
+      //when tapped on the map, it calls onAddMarker to add marker icon on the map
+      _onAddMarker(coordinates);
+    });
+  }
+
+  // marker click event
+  void _onMarkerTapped(MarkerId markerId) {
+    final Marker tappedMarker = _markers[markerId];
+    if (tappedMarker != null) {
+      setState(() {
+        final MarkerId previousMarkerId = selectedMarker;
+        if (previousMarkerId != null &&
+            _markers.containsKey(previousMarkerId)) {
+          final Marker resetOld = _markers[previousMarkerId].copyWith(
+              iconParam: BitmapDescriptor.defaultMarkerWithHue(
+                  BitmapDescriptor.hueOrange));
+          _markers[previousMarkerId] = resetOld;
+        }
+        //TODO : solve this cos it needs to tap 2 times in order to see the modalbottomsheet. shld be only one tap!
+        selectedMarker = markerId;
+        final Marker newMarker = tappedMarker.copyWith(
+            iconParam: BitmapDescriptor.defaultMarkerWithHue(
+                BitmapDescriptor.hueGreen),
+            onTapParam: () => _manageMarkerData(context, markerId));
+
+        _markers[markerId] = newMarker;
+      });
+    }
+  }
+
+  // options for creators to edit, update or delete marker
+  _manageMarkerData(BuildContext context, MarkerId tappedMarkerId) {
+    for (int i = 0; i < routeMarkerList.length; i++) {
+      // if both id is the same, activate onTap function and enable managing of marker data
+      if (MarkerId(routeMarkerList[i].markerID) == tappedMarkerId) {
+        routeMarker = routeMarkerList[i];
+      }
+    }
     showModalBottomSheet(
         context: context,
         builder: (builder) {
@@ -190,38 +259,116 @@ class _AddPostViewState extends State<AddPostView> {
         });
   }
 
+  // add marker details received from AddRouteDetailsView screen
   void _addRouteData(BuildContext context, RouteMarker routeMarker) async {
+    //this waits for the marker that is updated with data
     final updatedMarkerData = await Navigator.push(
       context,
       MaterialPageRoute(
           builder: (context) => AddRouteDetailsView(routeMarker: routeMarker)),
     ) as RouteMarker;
 
+    // iterate the current list of markers to update the marker with data if id is same
     if (updatedMarkerData != null) {
-      for (var item in routeMarkerList) {
-        final index = routeMarkerList.indexOf(item);
-        if (updatedMarkerData.routeMarkerID ==
-            routeMarkerList[index].routeMarkerID) {
+      print(
+          'Marker passed back from AddRouteData' + updatedMarkerData.markerID);
+      for (int i = 0; i < routeMarkerList.length; i++) {
+        if (routeMarkerList[i].markerID ==
+            updatedMarkerData.markerID.toString()) {
           setState(() {
-            routeMarkerList[index].title = updatedMarkerData.title;
-            routeMarkerList[index].caption = updatedMarkerData.caption;
-            routeMarkerList[index].imageList = updatedMarkerData.imageList;
-            print(updatedMarkerData.caption);
+            routeMarkerList[i].title = updatedMarkerData.title;
+            routeMarkerList[i].caption = updatedMarkerData.caption;
+            routeMarkerList[i].imageList =
+                List.from(updatedMarkerData.imageList);
           });
         }
       }
     }
   }
 
-  void _savePost() async {
-    String description = _postDescCon.text;
+  // store into post and its respective routemarkers into firestore
+  _checkPost() async {
+    bool isMarkerPosted = false;
+    bool isPosted = false;
 
+    if (routeMarkerList != null) {
+      for (int i = 0; i < routeMarkerList.length; i++) {
+        markerDocId =
+            await DatabaseServices.addMarkersToPost(routeMarkerList[i]);
+        setState(() {
+          isMarkerPosted = true;
+          if (markerDocId != null) {
+            routeMarkerIdsList.add(markerDocId);
+          }
+        });
+      }
+    }
+    if (isMarkerPosted) {
+      addToDatabase();
+    }
+
+    // means markers existed and added into firestore
+    if (_postDescCon.text.isEmpty || routeMarkerList == null) {
+      return showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CustomDialogBox(
+              icon: Icons.warning,
+              bgAvatarColor: Colors.redAccent,
+              iconColor: Colors.white,
+              dialogTitle: 'Oh no!',
+              dialogSubtitle:
+                  'Noticed there are fields left blank, are you sure you want to post?',
+              leftButtonText: 'Cancel',
+              rightButtonText: 'Post',
+              leftButtonTextColor: Colors.black,
+              rightButtonTextColor: primaryColor,
+              onPressedLeftButton: () => Navigator.of(context).pop(),
+              onPressedRightButton: () async {
+                Navigator.of(context).pop();
+                addToDatabase();
+              },
+            );
+          });
+    }
+  }
+
+  addToDatabase() async {
+    bool isPosted = false;
+
+    String description = _postDescCon.text ?? '';
+
+    //it stores in firestore using the img string passed from the other screen
     final RoutePost post = RoutePost(
-      userId: widget.currentUser,
+      createdBy: widget.currentUser,
+      routeMarkerIds: routeMarkerIdsList,
       description: description,
-      routeMarkers: routeMarkerList,
     );
+
     await DatabaseServices.addPost(post);
+    setState(() {
+      isPosted = true;
+    });
+
+    if (isPosted) {
+      return showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CustomDialogBox(
+              icon: Icons.check,
+              bgAvatarColor: Colors.green,
+              iconColor: Colors.white,
+              dialogTitle: 'Post Created!',
+              dialogSubtitle: 'Awesome! Continue sharing with us more!',
+              rightButtonText: 'Dismiss',
+              rightButtonTextColor: primaryColor,
+              onPressedRightButton: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              },
+            );
+          });
+    }
   }
 
   @override
@@ -234,6 +381,7 @@ class _AddPostViewState extends State<AddPostView> {
       child: Scaffold(
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
+          // TODO: implement discard alert dialog
           leading: CloseButton(
             onPressed: () => Navigator.of(context).pop(),
             color: Colors.black,
@@ -248,7 +396,7 @@ class _AddPostViewState extends State<AddPostView> {
                   Icons.check,
                   color: Colors.black,
                 ),
-                onPressed: _savePost)
+                onPressed: _checkPost)
           ],
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -357,6 +505,7 @@ class _AddPostViewState extends State<AddPostView> {
   }
 
   GoogleMap buildGoogleMap() {
+    final MarkerId selectedId = selectedMarker;
     return GoogleMap(
       onMapCreated: _onMapCreated,
       myLocationButtonEnabled: false,
@@ -364,27 +513,28 @@ class _AddPostViewState extends State<AddPostView> {
       zoomGesturesEnabled: true,
       zoomControlsEnabled: false,
       mapToolbarEnabled: false,
+      compassEnabled: false,
       initialCameraPosition: CameraPosition(
         target: initialPosition,
         zoom: 11.0,
       ),
       mapType: MapType.normal,
-      markers: Set<Marker>.of(markerList),
+      markers: Set<Marker>.of(_markers.values),
       onCameraMove: _onCameraMove,
-      onTap: _onAddMarker,
+      onTap: _onMapTapped,
     );
   }
 
   void clearSearch() {
     setState(() {
       _destPointCon.clear();
-      selectedLocation = false;
+      isLocationSelected = false;
+      // isMarkerAdded = false;
     });
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     _destPointCon.dispose();
     _postDescCon.dispose();
     super.dispose();

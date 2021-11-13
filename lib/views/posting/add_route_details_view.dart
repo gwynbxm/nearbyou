@@ -4,11 +4,13 @@
  * Last modified 18/8/21 4:54 PM
  */
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nearbyou/models/route_marker_model.dart';
+import 'package:nearbyou/utilities/ui/components/custom_dialog_box.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_icon_button.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
 
@@ -38,7 +40,6 @@ class _AddRouteDetailsViewState extends State<AddRouteDetailsView> {
 
   @override
   void initState() {
-    // TODO: implement initState
     setState(() {
       print(widget.routeMarker);
     });
@@ -114,7 +115,9 @@ class _AddRouteDetailsViewState extends State<AddRouteDetailsView> {
     PickedFile img = await ImagePicker().getImage(source: ImageSource.camera);
     setState(() {
       _pickedImages.add(File(img.path));
-      images.add(File(img.path).toString());
+      final bytes = File(img.path).readAsBytesSync();
+      String imgIn64 = base64Encode(bytes);
+      images.add(imgIn64);
     });
   }
 
@@ -122,7 +125,10 @@ class _AddRouteDetailsViewState extends State<AddRouteDetailsView> {
     PickedFile img = await ImagePicker().getImage(source: ImageSource.gallery);
     setState(() {
       _pickedImages.add(File(img.path));
-      images.add(File(img.path).toString());
+      // images.add(File(img.path).toString());
+      final bytes = File(img.path).readAsBytesSync();
+      String imgIn64 = base64Encode(bytes);
+      images.add(imgIn64);
     });
   }
 
@@ -158,19 +164,55 @@ class _AddRouteDetailsViewState extends State<AddRouteDetailsView> {
     );
   }
 
-  void _saveRouteData() {
-    String title = _titleCon.text;
-    String caption = _captionCon.text;
-    RouteMarker updatedMarkerData = RouteMarker(
-        routeMarkerID: widget.routeMarker.routeMarkerID,
-        title: title,
-        caption: caption,
-        imageList: images,
-        coordinates: widget.routeMarker.coordinates,
-        routeOrder: widget.routeMarker.routeOrder);
-    if (updatedMarkerData != null) {
-      Navigator.pop(context, updatedMarkerData);
+  _saveRouteData() {
+    widget.routeMarker.title = _titleCon.text ?? '';
+    widget.routeMarker.caption = _captionCon.text ?? '';
+    widget.routeMarker.imageList = images ?? '';
+
+    //check for blank. if blank
+    if (_titleCon.text.isEmpty || _captionCon.text.isEmpty || images.isEmpty) {
+      return showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CustomDialogBox(
+              icon: Icons.warning,
+              bgAvatarColor: Colors.redAccent,
+              iconColor: Colors.white,
+              dialogTitle: 'Oh no!',
+              dialogSubtitle:
+                  'Noticed there are fields left blank, are you sure you want to save with empty fields?',
+              leftButtonText: 'Cancel',
+              rightButtonText: 'Save',
+              leftButtonTextColor: Colors.black,
+              rightButtonTextColor: primaryColor,
+              onPressedLeftButton: () => Navigator.of(context).pop(),
+              onPressedRightButton: () {
+                Navigator.of(context).pop();
+                Navigator.pop(context, widget.routeMarker);
+              },
+            );
+          });
+    } else {
+      return showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CustomDialogBox(
+              icon: Icons.auto_awesome,
+              bgAvatarColor: iconColor,
+              iconColor: Colors.white,
+              dialogTitle: 'Awesome!',
+              dialogSubtitle:
+                  'Thank you for your insightful details! You may come back to edit it later!',
+              rightButtonText: 'Dismiss',
+              rightButtonTextColor: primaryColor,
+              onPressedRightButton: () {
+                Navigator.pop(context, widget.routeMarker);
+                Navigator.of(context).pop();
+              },
+            );
+          });
     }
+    //else
   }
 
   @override
