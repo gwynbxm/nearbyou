@@ -14,7 +14,7 @@ import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/models/route_post_model.dart';
 import 'package:nearbyou/utilities/constants/constants.dart';
 import 'package:nearbyou/utilities/ui/components/progress_icon.dart';
-import 'package:nearbyou/views/feed/image_full_view.dart';
+import 'package:nearbyou/utilities/ui/components/image_full_view.dart';
 import 'package:nearbyou/views/profile/components/profile_carousel_widget.dart';
 
 class RoutePostWidget extends StatefulWidget {

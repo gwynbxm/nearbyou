@@ -12,7 +12,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/utilities/constants/constants.dart';
-import 'package:nearbyou/views/feed/image_full_view.dart';
+import 'package:nearbyou/utilities/ui/components/image_full_view.dart';
 
 class CarouselWidget extends StatefulWidget {
   final List<RouteMarker> postMarkers;

@@ -22,7 +22,7 @@ import 'package:nearbyou/utilities/ui/components/progress_icon.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_button.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_icon_button.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
-import 'package:nearbyou/views/feed/image_full_view.dart';
+import 'package:nearbyou/utilities/ui/components/image_full_view.dart';
 import 'package:nearbyou/views/posting/add_post_view.dart';
 import 'package:nearbyou/views/home/home_view.dart';
 import 'package:nearbyou/views/profile/user_edit_profile_view.dart';
