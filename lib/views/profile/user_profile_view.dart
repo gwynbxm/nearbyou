@@ -52,6 +52,9 @@ class _ProfileViewState extends State<ProfileView> {
   int _onSelectedItem = 1;
 
   ScrollController scrollController = ScrollController();
+
+  bool isFollowing = false;
+
   @override
   void initState() {
     super.initState();
@@ -210,12 +213,6 @@ class _ProfileViewState extends State<ProfileView> {
         ],
       ),
     );
-    // }
-    // }
-
-    return circularProgressIndicator();
-    // },
-    // );
   }
 
   buildProfilePosts() {

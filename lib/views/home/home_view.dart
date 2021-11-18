@@ -10,12 +10,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 // import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:geocoder/geocoder.dart' as geocoder;
 import 'package:nearbyou/models/places_model.dart';
+import 'package:nearbyou/models/route_coordinates_model.dart';
 import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
 import 'package:nearbyou/utilities/constants/constants.dart';
@@ -86,7 +88,10 @@ class _HomeScreenState extends State<HomeScreen> {
   List<String> imgList = [];
 
   List<RouteMarker> relatedNearbyMarkerList = [];
-  // RouteCoordinates routeCoordinates = RouteCoordinates();
+  bool isNearestMarkerTapped = false;
+  // RouteCoordinates routeCoordinates;
+
+  final geo = Geoflutterfire();
 
   @override
   void initState() {
@@ -135,18 +140,29 @@ class _HomeScreenState extends State<HomeScreen> {
     isLocationSelected = true;
     setState(() {
       // markersOnMap.add(userMarker);
-      routeMarker = RouteMarker.withoutData(
-          GeoPoint(coordinates.latitude, coordinates.longitude));
-      // routeCoordinates.setGeoPoints = GeoPoint(coordinates.latitude, coordinates.longitude);
-      // routeCoordinates.setGeoHash =
-      //     routeMarker = RouteMarker.withoutData(coordinates);
-      // getNearbyPlaces(coordinates);
+      // routeMarker = RouteMarker.withoutData(
+      //     GeoPoint(coordinates.latitude, coordinates.longitude));
+      GeoFirePoint geoFirePoint = geo.point(
+          latitude: coordinates.latitude, longitude: coordinates.longitude);
+
+      routeMarker = RouteMarker.withoutData(RouteCoordinates(
+          geoHash: geoFirePoint.hash, geoPoint: geoFirePoint.geoPoint));
+
+      // routeMarker = RouteMarker.withoutData(
+      //     GeoPoint(coordinates.latitude, coordinates.longitude));
+
+      // routeMarker = RouteMarker.withoutData(geoFirePoint);
+      getNearbyPlaces(coordinates);
     });
   }
 
   void addNearestMarker(RouteMarker routeMarker) {
-    double lat = routeMarker.coordinates.latitude;
-    double lng = routeMarker.coordinates.longitude;
+    // double lat = routeMarker.coordinates.latitude;
+    // double lng = routeMarker.coordinates.longitude;
+
+    double lat = routeMarker.coordinates.geoPoint.latitude;
+    double lng = routeMarker.coordinates.geoPoint.longitude;
+
     MarkerId id = MarkerId(routeMarker.markerID);
     final Marker marker = Marker(
         markerId: id,
@@ -227,12 +243,14 @@ class _HomeScreenState extends State<HomeScreen> {
     _searchCon.clear();
     _markers.clear();
     isLocationSelected = false;
+    isNearestMarkerTapped = false;
     panelController.close();
   }
 
   Future<void> _onMapTapped(LatLng point) async {
     final coordinates = GeoPoint(point.latitude, point.longitude);
     setState(() {
+      isNearestMarkerTapped = false;
       _getDetailsFromCoordinates(point.latitude, point.longitude);
       _onAddMarker(coordinates);
       animateCamera(coordinates);
@@ -297,6 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final Marker tappedMarker = _markers[markerId];
     if (tappedMarker != null) {
       setState(() {
+        isNearestMarkerTapped = true;
         final MarkerId previousMarkerId = selectedMarker;
         if (previousMarkerId != null &&
             _markers.containsKey(previousMarkerId)) {
@@ -326,10 +345,11 @@ class _HomeScreenState extends State<HomeScreen> {
   // get nearest post marker details of the same coordinates from firestore to display on sliding panel
   _getDetailsFromFirestore(GeoPoint points) async {
     QuerySnapshot snapshot = await postMarkersCollection
-        .where('coordinates', isEqualTo: points)
+        .where('position.geopoint', isEqualTo: points)
         .get();
 
     setState(() {
+      isNearestMarkerTapped = true;
       relatedNearbyMarkerList =
           snapshot.docs.map((doc) => RouteMarker.fromDocument(doc)).toList();
     });
@@ -558,24 +578,38 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-                Container(
-                  margin: EdgeInsets.only(top: 110),
-                  child: SingleChildScrollView(
-                    child: ListView.builder(
-                      controller: scrollController,
-                      physics: NeverScrollableScrollPhysics(),
-                      primary: false,
-                      scrollDirection: Axis.vertical,
-                      shrinkWrap: true,
-                      itemCount: relatedNearbyMarkerList.length,
-                      itemBuilder: (context, index) {
-                        return RouteMarkerWidget(
-                            relatedNearbyMarkerList[index]);
-                      },
-                    ),
-                    // buildRouteInfo(context),
-                  ),
-                )
+                isNearestMarkerTapped
+                    ? Container(
+                        margin: EdgeInsets.only(top: 110),
+                        child: SingleChildScrollView(
+                          child: ListView.builder(
+                            controller: scrollController,
+                            physics: NeverScrollableScrollPhysics(),
+                            primary: false,
+                            scrollDirection: Axis.vertical,
+                            shrinkWrap: true,
+                            itemCount: relatedNearbyMarkerList.length,
+                            itemBuilder: (context, index) {
+                              return RouteMarkerWidget(
+                                  relatedNearbyMarkerList[index]);
+                            },
+                          ),
+                          // buildRouteInfo(context),
+                        ),
+                      )
+                    : Container(
+                        margin: EdgeInsets.only(top: 110),
+                        child: Center(
+                          child: Text(
+                            "No related marker found",
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 18.0,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                      )
               ],
             ),
           )

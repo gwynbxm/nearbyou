@@ -4,6 +4,8 @@
  * Last modified 9/10/21 9:43 PM
  */
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 class ImageFullView extends StatefulWidget {
@@ -41,8 +43,8 @@ class _ImageFullViewState extends State<ImageFullView> {
           maxScale: 5.0,
           child: GestureDetector(
             child: Center(
-              child: Image.network(
-                widget.imgUrl,
+              child: Image.memory(
+                base64Decode(widget.imgUrl),
                 width: double.infinity,
               ),
             ),

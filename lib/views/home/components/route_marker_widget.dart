@@ -74,24 +74,24 @@ class _RouteMarkerWidgetState extends State<RouteMarkerWidget> {
                 ],
               ),
             ),
-            // widget.marker.imageList.length == 1
-            //     ? Container(
-            //         width: MediaQuery.of(context).size.width,
-            //         margin: EdgeInsets.symmetric(horizontal: 5.0),
-            //         child: GestureDetector(
-            //           child: Image.memory(
-            //             base64Decode(widget.marker.imageList.first),
-            //             fit: BoxFit.cover,
-            //           ),
-            //           onTap: () => Navigator.push(
-            //               context,
-            //               MaterialPageRoute(
-            //                   builder: (context) => ImageFullView(
-            //                       widget.marker.imageList.first))),
-            //         ),
-            //       )
-            //     :
-            CarouselWidget(widget.marker.imageList),
+            widget.marker.imageList.length == 1
+                ? Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height,
+                    margin: EdgeInsets.symmetric(horizontal: 5.0),
+                    child: GestureDetector(
+                      child: Image.memory(
+                        base64Decode(widget.marker.imageList.first),
+                        fit: BoxFit.cover,
+                      ),
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ImageFullView(
+                                  widget.marker.imageList.single))),
+                    ),
+                  )
+                : CarouselWidget(widget.marker.imageList),
             ButtonBar(
               alignment: MainAxisAlignment.spaceEvenly,
               children: [
