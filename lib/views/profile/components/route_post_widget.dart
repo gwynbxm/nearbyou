@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/models/route_post_model.dart';
 import 'package:nearbyou/utilities/constants/constants.dart';
+import 'package:nearbyou/utilities/ui/components/custom_dialog_box.dart';
 import 'package:nearbyou/utilities/ui/components/progress_icon.dart';
 import 'package:nearbyou/utilities/ui/components/image_full_view.dart';
 import 'package:nearbyou/views/profile/components/profile_carousel_widget.dart';
@@ -89,14 +90,16 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
                   PopupMenuItem(
                     value: 1,
                     child: ListTile(
-                        leading: Icon(Icons.bookmark_border_outlined),
-                        title: Text('Save'),
-                        onTap: () {}),
+                      leading: Icon(Icons.bookmark_border_outlined),
+                      title: Text('Save'),
+                    ),
                   ),
                   PopupMenuItem(
                     value: 2,
                     child: ListTile(
-                        leading: Icon(Icons.edit), title: Text('Edit')),
+                      leading: Icon(Icons.edit),
+                      title: Text('Edit'),
+                    ),
                   ),
                   PopupMenuItem(
                     value: 3,

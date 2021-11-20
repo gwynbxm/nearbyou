@@ -45,7 +45,8 @@ class _CarouselWidgetState extends State<CarouselWidget> {
         setState(() {
           isLoading = false;
           //combine all images into a list
-          images.add(widget.postMarkers[i].imageList[j]);
+          images.add(widget.postMarkers[i].imageList[
+              j]); //TODO: didnt combine with other route marker data!!
         });
       }
     }
