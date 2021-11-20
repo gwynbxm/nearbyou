@@ -118,6 +118,8 @@ class _AddRouteDetailsViewState extends State<AddRouteDetailsView> {
       final bytes = File(img.path).readAsBytesSync();
       String imgIn64 = base64Encode(bytes);
       images.add(imgIn64);
+
+      print('image saved' + images.length.toString());
     });
   }
 
@@ -129,6 +131,7 @@ class _AddRouteDetailsViewState extends State<AddRouteDetailsView> {
       final bytes = File(img.path).readAsBytesSync();
       String imgIn64 = base64Encode(bytes);
       images.add(imgIn64);
+      print('image saved' + images.length.toString());
     });
   }
 
@@ -212,7 +215,6 @@ class _AddRouteDetailsViewState extends State<AddRouteDetailsView> {
             );
           });
     }
-    //else
   }
 
   @override

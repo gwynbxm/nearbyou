@@ -62,6 +62,8 @@ class _AddPostViewState extends State<AddPostView> {
   bool isLocationSelected = false;
   bool isMarkerAdded = false;
 
+  final geo = Geoflutterfire();
+
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
@@ -85,16 +87,16 @@ class _AddPostViewState extends State<AddPostView> {
       isLocationSelected = true;
       _destPointCon.text = widget.destPointData.coordinates.toString();
 
-      double lat = widget.destPointData.coordinates.latitude;
-      double lng = widget.destPointData.coordinates.longitude;
+      // double lat = widget.destPointData.coordinates.latitude;
+      // double lng = widget.destPointData.coordinates.longitude;
       //
-      // double lat = widget.destPointData.coordinates.geoPoint.latitude;
-      // double lng = widget.destPointData.coordinates.geoPoint.longitude;
+      double lat = widget.destPointData.coordinates.geoPoint.latitude;
+      double lng = widget.destPointData.coordinates.geoPoint.longitude;
 
       setState(() {
         _onAddMarker(LatLng(lat, lng));
-        animateCamera(widget.destPointData.coordinates);
-        // animateCamera(widget.destPointData.coordinates.geoPoint);
+        // animateCamera(widget.destPointData.coordinates);
+        animateCamera(widget.destPointData.coordinates.geoPoint);
       });
     }
     super.initState();
@@ -131,10 +133,15 @@ class _AddPostViewState extends State<AddPostView> {
       // add marker object to the map and to the temporary list of markers
       markerIconList.add(marker);
 
+      GeoFirePoint tappedLocation = geo.point(
+          latitude: coordinates.latitude, longitude: coordinates.longitude);
+
       //update the marker object
       routeMarker = RouteMarker(
           markerID: markerId.toString(),
-          coordinates: GeoPoint(coordinates.latitude, coordinates.longitude),
+          coordinates: RouteCoordinates(
+              geoHash: tappedLocation.hash, geoPoint: tappedLocation.geoPoint),
+          // coordinates: tappedLocation,
           routeOrder: markerCount);
 
       //add marker object to the list of markers

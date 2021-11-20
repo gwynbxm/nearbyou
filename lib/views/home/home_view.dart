@@ -218,6 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _searchCon.text = result.placeName;
         panelController.open();
         isLocationSelected = true;
+        isNearestMarkerTapped = false;
         _placeName = placesDetails.placeName;
         _placeAdd = placesDetails.placeAddress;
         _getPlacesDetailsFromSearch(placesDetails);
@@ -250,7 +251,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _onMapTapped(LatLng point) async {
     final coordinates = GeoPoint(point.latitude, point.longitude);
     setState(() {
-      isNearestMarkerTapped = false;
       _getDetailsFromCoordinates(point.latitude, point.longitude);
       _onAddMarker(coordinates);
       animateCamera(coordinates);
@@ -311,7 +311,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // on tap nearest route marker
   void _onNearestMarkerTapped(MarkerId markerId) {
-    //TODO : unable to display route data
     final Marker tappedMarker = _markers[markerId];
     if (tappedMarker != null) {
       setState(() {
@@ -598,7 +597,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       )
                     : Container(
-                        margin: EdgeInsets.only(top: 110),
+                        margin: EdgeInsets.symmetric(vertical: 200),
                         child: Center(
                           child: Text(
                             "No related marker found",

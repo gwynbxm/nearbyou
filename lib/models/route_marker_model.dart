@@ -4,18 +4,30 @@
  * Last modified 18/8/21 4:49 PM
  */
 
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
+import 'package:nearbyou/models/route_coordinates_model.dart';
 
 class RouteMarker {
-  String routeMarkerID;
+  String routeMarkerDocID;
+  String markerID;
   String title;
   String caption;
   List<String> imageList;
-  LatLng coordinates;
+  // GeoPoint coordinates;
+
+  RouteCoordinates coordinates;
+
+  // GeoFirePoint coordinates;
+
+  // LatLng coordinates;
   int routeOrder;
 
   RouteMarker({
-    this.routeMarkerID,
+    this.routeMarkerDocID,
+    this.markerID,
     this.title,
     this.caption,
     this.imageList,
@@ -24,26 +36,44 @@ class RouteMarker {
   });
 
   RouteMarker.withoutData(
+    // this.coordinates,
     this.coordinates,
   );
 
   Map<String, dynamic> toMap() => {
-        'routeMarkerId': routeMarkerID,
-        'title': title,
-        'caption': caption,
-        'imageList': imageList,
-        'coordinates': coordinates.toJson(),
+        'routeMarkerDocID': routeMarkerDocID,
+        'markerID': markerID,
+        'title': title ?? '',
+        'caption': caption ?? '',
+        'imageList': imageList ?? '',
+        'position': coordinates.toMap(),
+        // 'position': coordinates.data,
+        // 'coordinates': coordinates.toJson(),
+        // 'coordinates': {
+        //   'geoHash': coordinates.hash,
+        //   'geoPoint': coordinates.geoPoint,
+        // },
+        // 'coordinates': coordinates,
+        // 'coordinates': coordinates.toMap(),
         'routeOrder': routeOrder,
       };
 
   factory RouteMarker.fromMap(Map<dynamic, dynamic> json) {
     return RouteMarker(
-      routeMarkerID: json['routeMarkerId'],
-      title: json['title'],
-      caption: json['caption'],
-      imageList: json['imageList'],
-      coordinates: json['coordinates'],
+      //TODO: check if the fields are empty when storing?
+      routeMarkerDocID: json['routeMarkerDocID'],
+      markerID: json['markerID'],
+      title: json['title'] ?? '',
+      caption: json['caption'] ?? '',
+      imageList: List<String>.from(json['imageList']).toList(),
+      coordinates: RouteCoordinates.fromMap(json['position']),
+      // coordinates: json['coordinates'],
+      // coordinates: json['position'],
       routeOrder: json['routeOrder'],
     );
+  }
+
+  factory RouteMarker.fromDocument(DocumentSnapshot snapshot) {
+    return RouteMarker.fromMap(snapshot.data());
   }
 }

@@ -4,6 +4,7 @@
  * Last modified 26/7/21 4:58 PM
  */
 import 'package:flutter/material.dart';
+import 'package:nearbyou/utilities/ui/palette.dart';
 
 import 'components/settings_item.dart';
 
@@ -33,7 +34,7 @@ class _MainSettingsViewState extends State<MainSettingsView> {
         elevation: 0,
       ),
       body: Container(
-        padding: EdgeInsets.only(left: 15, right: 15, top: 20),
+        padding: EdgeInsets.only(left: 30, right: 30, top: 20),
         child: ListView(
           children: [
             Row(
@@ -41,8 +42,9 @@ class _MainSettingsViewState extends State<MainSettingsView> {
                 Text(
                   'Account',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
+                    color: bgColor,
                   ),
                 ),
               ],
@@ -50,23 +52,24 @@ class _MainSettingsViewState extends State<MainSettingsView> {
             Divider(
               height: 15,
               thickness: 2,
+              color: bgColor,
             ),
             SizedBox(
-              height: 10,
+              height: 12,
             ),
             SettingsItem(
               title: 'Manage Account',
               onTap: () {},
             ),
             SizedBox(
-              height: 10,
+              height: 12,
             ),
             SettingsItem(
               title: 'Privacy & Security',
               onTap: () {},
             ),
             SizedBox(
-              height: 10,
+              height: 12,
             ),
             SettingsItem(
               title: 'Language',
@@ -80,8 +83,9 @@ class _MainSettingsViewState extends State<MainSettingsView> {
                 Text(
                   'General',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
+                    color: bgColor,
                   ),
                 ),
               ],
@@ -89,23 +93,24 @@ class _MainSettingsViewState extends State<MainSettingsView> {
             Divider(
               height: 15,
               thickness: 2,
+              color: bgColor,
             ),
             SizedBox(
-              height: 10,
+              height: 12,
             ),
             SettingsItem(
               title: 'Notifications',
               onTap: () {},
             ),
             SizedBox(
-              height: 10,
+              height: 12,
             ),
             SettingsItem(
               title: 'Help Center',
               onTap: () {},
             ),
             SizedBox(
-              height: 10,
+              height: 12,
             ),
             SettingsItem(
               title: 'About Nearbyou',

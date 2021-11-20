@@ -6,16 +6,16 @@
 
 import 'package:flutter/widgets.dart';
 import 'package:nearbyou/views/home/home_view.dart';
-import 'package:nearbyou/views/login/login_view.dart';
+import 'package:nearbyou/views/signin/signin_view.dart';
 import 'package:nearbyou/views/profile/user_profile_view.dart';
-import 'package:nearbyou/views/register/register_view.dart';
+import 'package:nearbyou/views/signup/signup_view.dart';
 import 'package:nearbyou/views/splash/splash_view.dart';
 
 final Map<String, WidgetBuilder> routes = <String, WidgetBuilder>{
   '/': (context) => SplashView(),
   // '/home': (context, {retrievedUser}) => HomeScreen(user: retrievedUser),
   '/home': (context) => HomeScreen(),
-  '/login': (context) => LoginView(),
-  '/register': (context) => RegisterView(),
+  '/login': (context) => SignInView(),
+  '/register': (context) => SignUpView(),
   '/profile': (context) => ProfileView(),
 };

@@ -3,7 +3,7 @@
  * Copyright (c) 2021. All rights reserved.
  * Last modified 5/7/21 11:46 AM
  */
-
+//provides suggestion for searching
 class Suggestions {
   final String placeId;
   final String placeName;
