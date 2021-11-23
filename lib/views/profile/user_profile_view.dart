@@ -93,12 +93,14 @@ class _ProfileViewState extends State<ProfileView> {
     return Scaffold(
         appBar: AppBar(
           leading: BackButton(
-            onPressed: () =>
-                // TODO: implement proper pop of the screen
-                Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
-            ),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            // TODO: implement proper pop of the screen
+            //     Navigator.push(
+            //   context,
+            //   MaterialPageRoute(builder: (context) => HomeScreen()),
+            // ),
             color: Colors.black,
           ),
           actions: [

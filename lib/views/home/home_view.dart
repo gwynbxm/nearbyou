@@ -763,15 +763,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       bottomRight: Radius.circular(20))),
             ),
             DrawerItem(
-              icon: Icons.person_outline_outlined,
-              text: 'Profile',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        ProfileView(userId: _auth.currentUser.uid.toString())),
-              ),
-            ),
+                icon: Icons.person_outline_outlined,
+                text: 'Profile',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ProfileView(
+                            userId: _auth.currentUser.uid.toString())),
+                  );
+                }),
             DrawerItem(
               icon: Icons.chat_outlined,
               text: 'Chat',
