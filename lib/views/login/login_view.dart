@@ -13,7 +13,7 @@ import 'package:nearbyou/utilities/ui/components/rounded_input_field.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_pwd_field.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
 import 'package:nearbyou/views/home/home_view.dart';
-import 'package:nearbyou/views/register/register_view.dart';
+import 'package:nearbyou/views/signup/signup_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginView extends StatelessWidget {
@@ -156,8 +156,7 @@ class _LoginAuthState extends State<LoginAuth> {
                               onTap: () => Navigator.push(
                                   context,
                                   new MaterialPageRoute(
-                                      builder: (context) =>
-                                          new RegisterView())),
+                                      builder: (context) => new SignUpView())),
                               child: Text(
                                 "Sign up",
                                 style: TextStyle(

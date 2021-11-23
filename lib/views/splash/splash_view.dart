@@ -1,14 +1,14 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 22/6/21 6:19 PM
+ * Last modified 5/7/21 11:46 AM
  */
 
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:nearbyou/views/home/home_view.dart';
-import 'package:nearbyou/views/login/login_view.dart';
+import 'package:nearbyou/views/signin/signin_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashView extends StatefulWidget {
@@ -24,7 +24,6 @@ class _SplashViewState extends State<SplashView> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
     Timer(
@@ -48,7 +47,7 @@ class _SplashViewState extends State<SplashView> {
           context, MaterialPageRoute(builder: (context) => HomeScreen()));
     } else {
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => LoginView()));
+          context, MaterialPageRoute(builder: (context) => SignInView()));
     }
   }
 

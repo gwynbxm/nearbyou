@@ -1,7 +1,7 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 1/7/21 3:09 PM
+ * Last modified 5/7/21 11:46 AM
  */
 
 import 'package:flutter/material.dart';
@@ -26,7 +26,7 @@ class DrawerItem extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: primaryColor,
+            color: textLightColor,
           ),
           Padding(
             padding: EdgeInsets.only(left: 8.0),

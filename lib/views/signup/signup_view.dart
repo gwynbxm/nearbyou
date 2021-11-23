@@ -1,42 +1,46 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 22/6/21 6:19 PM
+ * Last modified 16/7/21 12:45 PM
  */
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:nearbyou/models/user_profile_model.dart';
 import 'package:nearbyou/utilities/helper/validator.dart';
 import 'package:nearbyou/utilities/services/firebase_services/authentication.dart';
+import 'package:nearbyou/utilities/services/firebase_services/firestore.dart';
+import 'package:nearbyou/utilities/ui/components/custom_dialog_box.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_button.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_input_field.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_pwd_field.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
 import 'package:nearbyou/views/home/home_view.dart';
-import 'package:nearbyou/views/login/login_view.dart';
+import 'package:nearbyou/views/signin/signin_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class RegisterView extends StatelessWidget {
-  const RegisterView({Key key}) : super(key: key);
+class SignUpView extends StatelessWidget {
+  const SignUpView({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: RegisterAcc(),
+        body: SignUp(),
       ),
     );
   }
 }
 
-class RegisterAcc extends StatefulWidget {
-  const RegisterAcc({Key key}) : super(key: key);
+class SignUp extends StatefulWidget {
+  const SignUp({Key key}) : super(key: key);
 
   @override
-  _RegisterAccState createState() => _RegisterAccState();
+  _SignUpState createState() => _SignUpState();
 }
 
-class _RegisterAccState extends State<RegisterAcc> {
+class _SignUpState extends State<SignUp> {
   final _formKey = GlobalKey<FormState>();
 
   final _focusUsername = FocusNode();
@@ -49,23 +53,72 @@ class _RegisterAccState extends State<RegisterAcc> {
   TextEditingController _pwdCon = TextEditingController();
   TextEditingController _cfmPwdCon = TextEditingController();
 
-  bool _isHidden = true;
+  bool _isHiddenPwd = true;
+  bool _isHiddenCfmPwd = true;
+  bool isLoading = false;
 
-  void _toggle() {
+  void _togglePwd() {
     setState(() {
-      _isHidden = !_isHidden;
+      _isHiddenPwd = !_isHiddenPwd;
     });
   }
 
-  void validateRegister() async {
+  void _toggleCfmPwd() {
+    setState(() {
+      _isHiddenCfmPwd = !_isHiddenCfmPwd;
+    });
+  }
+
+  validateRegister() async {
     FormState form = _formKey.currentState;
     if (form.validate()) {
-      User user = await Auth().register(_emailCon.text, _pwdCon.text);
+      User user = await Auth()
+          .register(_emailCon.text, _pwdCon.text, _usernameCon.text);
       if (user != null) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
-        );
+        UserData userProfile = UserData(username: _usernameCon.text);
+        await DatabaseServices.addUser(user.uid, userProfile);
+
+        return showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return CustomDialogBox(
+                icon: Icons.auto_awesome,
+                bgAvatarColor: iconColor,
+                iconColor: Colors.white,
+                dialogTitle: 'Registration Successful!',
+                dialogSubtitle:
+                    'Thank you for signing up with Nearbyou! You may proceed to verify your email before signing in!',
+                rightButtonText: 'Dismiss',
+                rightButtonTextColor: primaryColor,
+                onPressedRightButton: () {
+                  Navigator.of(context).pop();
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => SignInView()));
+                },
+              );
+            });
+      } else {
+        return showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return CustomDialogBox(
+                icon: Icons.warning,
+                bgAvatarColor: Colors.redAccent,
+                iconColor: Colors.white,
+                dialogTitle: 'Existing Account found!',
+                dialogSubtitle:
+                    'Email has already been taken! Please try another email or sign in if you have registered!',
+                leftButtonText: 'Cancel',
+                rightButtonText: 'Sign In',
+                rightButtonTextColor: primaryColor,
+                leftButtonTextColor: Colors.black,
+                onPressedLeftButton: () => Navigator.of(context).pop(),
+                onPressedRightButton: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                },
+              );
+            });
       }
     } else {
       print('Form is invalid');
@@ -105,7 +158,8 @@ class _RegisterAccState extends State<RegisterAcc> {
                         RoundedInputField(
                           controller: _usernameCon,
                           focusNode: _focusUsername,
-                          hintText: 'Username',
+                          hintText: "Username",
+                          labelText: "Username",
                           onChanged: (value) {},
                           validator: (value) =>
                               value.isEmpty ? 'Username cannot be blank' : null,
@@ -113,46 +167,49 @@ class _RegisterAccState extends State<RegisterAcc> {
                         RoundedInputField(
                           controller: _emailCon,
                           focusNode: _focusEmail,
-                          hintText: 'Email Address',
+                          hintText: "Email Address",
+                          labelText: "Email Address",
                           onChanged: (value) {},
                           validator: (value) =>
                               value.isEmpty ? 'Email cannot be blank' : null,
                         ),
                         RoundedPasswordField(
                           controller: _pwdCon,
-                          obscureText: _isHidden,
+                          obscureText: _isHiddenPwd,
                           onChanged: (value) {},
                           focusNode: _focusPwd,
                           hintText: "Password",
+                          labelText: "Password",
                           suffixIcon: IconButton(
-                            icon: Icon(_isHidden
+                            icon: Icon(_isHiddenPwd
                                 ? Icons.visibility
                                 : Icons.visibility_off),
                             color: primaryColor,
-                            onPressed: () => _toggle(),
+                            onPressed: () => _togglePwd(),
                           ),
                           validator: (value) =>
                               Validator.validatePassword(value),
                         ),
                         RoundedPasswordField(
                           controller: _cfmPwdCon,
-                          obscureText: _isHidden,
+                          obscureText: _isHiddenCfmPwd,
                           onChanged: (value) {},
                           focusNode: _focusCfmPwd,
                           hintText: "Confirm Password",
+                          labelText: "Confirm Password",
                           suffixIcon: IconButton(
-                            icon: Icon(_isHidden
+                            icon: Icon(_isHiddenCfmPwd
                                 ? Icons.visibility
                                 : Icons.visibility_off),
                             color: primaryColor,
-                            onPressed: () => _toggle(),
+                            onPressed: () => _toggleCfmPwd(),
                           ),
                           validator: (value) => Validator.validateCfmPassword(
                               _pwdCon.text, _cfmPwdCon.text),
                         ),
-
                         RoundedButton(
                           onPressed: () => validateRegister(),
+                          color: primaryColor,
                           text: "SIGN UP",
                         ),
                         SizedBox(height: 15.0),
@@ -174,7 +231,7 @@ class _RegisterAccState extends State<RegisterAcc> {
                               onTap: () => Navigator.push(
                                   context,
                                   new MaterialPageRoute(
-                                      builder: (context) => new LoginView())),
+                                      builder: (context) => new SignInView())),
                               child: Text(
                                 "Sign In",
                                 style: TextStyle(
@@ -198,7 +255,6 @@ class _RegisterAccState extends State<RegisterAcc> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     _usernameCon.dispose();
     _emailCon.dispose();

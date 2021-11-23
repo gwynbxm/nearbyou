@@ -1,16 +1,16 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 22/6/21 6:19 PM
+ * Last modified 5/7/21 11:46 AM
  */
 
 class Validator {
-  static String validateEmail(String value) {
+  static String validateEmail(String email) {
     Pattern pattern = r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+';
     RegExp regex = new RegExp(pattern);
-    if (value.isEmpty)
+    if (email.isEmpty)
       return 'Email cannot be blank';
-    else if (!regex.hasMatch(value))
+    else if (!regex.hasMatch(email))
       return 'Please enter a valid email address.';
     else
       return null;
@@ -29,7 +29,7 @@ class Validator {
 
   static String validateCfmPassword(String pwd, String cfmPwd) {
     if (cfmPwd.isEmpty)
-      return 'Please enter to confirm password';
+      return 'Password cannot be blank';
     else if (cfmPwd != pwd)
       return 'Password is not matching';
     else

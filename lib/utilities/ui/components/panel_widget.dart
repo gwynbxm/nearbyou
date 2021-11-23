@@ -1,7 +1,7 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 28/6/21 4:59 PM
+ * Last modified 15/8/21 7:50 PM
  */
 
 import 'package:flutter/material.dart';
@@ -11,9 +11,10 @@ class PanelWidget extends StatelessWidget {
   final Widget child;
   final ScrollController controller;
   final PanelController panelController;
+  final GestureTapCallback onTap;
 
   const PanelWidget(
-      {Key key, this.controller, this.panelController, this.child})
+      {Key key, this.controller, this.panelController, this.child, this.onTap})
       : super(key: key);
 
   @override
@@ -24,7 +25,7 @@ class PanelWidget extends StatelessWidget {
       children: [
         SizedBox(height: 20),
         buildDragHandle(),
-        SizedBox(height: 20),
+        SizedBox(height: 8),
         Container(
           child: child,
         )
@@ -43,10 +44,6 @@ class PanelWidget extends StatelessWidget {
             ),
           ),
         ),
-        onTap: togglePanel,
+        onTap: onTap,
       );
-
-  void togglePanel() => panelController.isPanelOpen
-      ? panelController.close()
-      : panelController.open();
 }

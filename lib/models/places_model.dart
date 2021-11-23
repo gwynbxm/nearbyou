@@ -1,20 +1,26 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 28/6/21 1:18 PM
+ * Last modified 15/7/21 7:29 PM
  */
 
+import 'package:nearbyou/models/geometry_model.dart';
+
 class Places {
-  String streetNo;
-  String street;
-  String city;
-  String zipCode;
+  final Geometry geometry;
+  final String placeName;
+  final String placeAddress;
 
-  Places({this.streetNo, this.street, this.city, this.zipCode});
+  Places({
+    this.geometry,
+    this.placeName,
+    this.placeAddress,
+  });
 
-  @override
-  String toString() {
-    // TODO: implement toString
-    return 'Places(streetNumber: $streetNo, street: $street, city: $city, zipCode: $zipCode)';
+  factory Places.fromMap(Map<String, dynamic> json) {
+    return Places(
+        geometry: Geometry.fromMap(json['geometry']),
+        placeName: json['name'],
+        placeAddress: json['vicinity']);
   }
 }

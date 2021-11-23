@@ -1,7 +1,7 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 22/6/21 6:19 PM
+ * Last modified 16/7/21 12:40 PM
  */
 import 'package:flutter/material.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';

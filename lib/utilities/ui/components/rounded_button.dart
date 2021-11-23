@@ -1,7 +1,7 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 22/6/21 6:19 PM
+ * Last modified 5/7/21 11:46 AM
  */
 
 import 'package:flutter/material.dart';
@@ -17,8 +17,8 @@ class RoundedButton extends StatelessWidget {
     Key key,
     this.text,
     this.onPressed,
-    this.color = primaryColor,
-    this.textColor = Colors.white,
+    this.color,
+    this.textColor,
   }) : super(key: key);
 
   @override
