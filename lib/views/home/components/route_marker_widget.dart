@@ -74,24 +74,44 @@ class _RouteMarkerWidgetState extends State<RouteMarkerWidget> {
                 ],
               ),
             ),
-            widget.marker.imageList.length == 1
+            widget.marker.imageList.isEmpty
                 ? Container(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height,
-                    margin: EdgeInsets.symmetric(horizontal: 5.0),
-                    child: GestureDetector(
-                      child: Image.memory(
-                        base64Decode(widget.marker.imageList.first),
-                        fit: BoxFit.cover,
-                      ),
-                      onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ImageFullView(
-                                  widget.marker.imageList.single))),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Padding(
+                          padding: EdgeInsets.only(top: 20.0),
+                          child: Text(
+                            "This post has no images",
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 18.0,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   )
-                : CarouselWidget(widget.marker.imageList),
+                : widget.marker.imageList.length == 1
+                    ? Container(
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.height,
+                        margin: EdgeInsets.symmetric(horizontal: 5.0),
+                        child: GestureDetector(
+                          child: Image.memory(
+                            base64Decode(widget.marker.imageList.first),
+                            fit: BoxFit.cover,
+                          ),
+                          onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ImageFullView(
+                                      widget.marker.imageList.single))),
+                        ),
+                      )
+                    : CarouselWidget(widget.marker.imageList),
             ButtonBar(
               alignment: MainAxisAlignment.spaceEvenly,
               children: [
