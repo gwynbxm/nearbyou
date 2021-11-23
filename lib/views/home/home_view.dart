@@ -255,6 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _onAddMarker(coordinates);
       animateCamera(coordinates);
       getNearbyPlaces(coordinates);
+      isNearestMarkerTapped = false;
     });
   }
 
