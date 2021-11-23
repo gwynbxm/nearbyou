@@ -28,7 +28,6 @@ class _CarouselWidgetState extends State<CarouselWidget> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getImages();
   }
@@ -45,8 +44,7 @@ class _CarouselWidgetState extends State<CarouselWidget> {
         setState(() {
           isLoading = false;
           //combine all images into a list
-          images.add(widget.postMarkers[i].imageList[
-              j]); //TODO: didnt combine with other route marker data!!
+          images.add(widget.postMarkers[i].imageList[j]);
         });
       }
     }
@@ -64,10 +62,6 @@ class _CarouselWidgetState extends State<CarouselWidget> {
                 base64Decode(url),
                 fit: BoxFit.cover,
               ),
-              // Image(
-              // image: File(url),
-              // fit: BoxFit.cover,
-              // ),
               onTap: () => Navigator.push(context,
                   MaterialPageRoute(builder: (context) => ImageFullView(url))),
             ),

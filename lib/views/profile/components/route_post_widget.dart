@@ -37,7 +37,6 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getPostMarkers();
     // getImages();
@@ -49,19 +48,16 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
     });
 
     if (widget.post != null) {
-      //marker id list
-      for (int i = 0; i < widget.post.routeMarkerIds.length; i++) {
-        //get markers related to the post
-        QuerySnapshot snap = await postMarkersCollection
-            .where('routeMarkerDocID', isEqualTo: widget.post.routeMarkerIds[i])
-            .get();
-        setState(() {
-          isLoading = false;
-          postMarkers =
-              snap.docs.map((doc) => RouteMarker.fromDocument(doc)).toList();
-          print('Number of Markers ' + postMarkers.length.toString());
-        });
-      }
+      QuerySnapshot snap = await postMarkersCollection
+          .where('routeMarkerDocID', whereIn: widget.post.routeMarkerIds)
+          .get();
+      setState(() {
+        isLoading = false;
+
+        postMarkers =
+            snap.docs.map((doc) => RouteMarker.fromDocument(doc)).toList();
+        print('Number of Markers ' + postMarkers.length.toString());
+      });
     }
   }
 
@@ -128,8 +124,7 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
           ),
           postMarkers.isEmpty
               ? Text('This post has no images')
-              : CarouselWidget(
-                  postMarkers), //TODO: it does not show all images from different markers
+              : CarouselWidget(postMarkers),
           // CarouselSlider(
           //     items: images.map((url) {
           //       return Container(
