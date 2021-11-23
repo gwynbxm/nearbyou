@@ -115,15 +115,32 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
             ),
           ),
           // buildPostContent(post),
-          Center(
-            child: Padding(
-                padding: EdgeInsets.all(10.0),
-                child: Text(widget.post.description)
-                // : Text('This post has no description'),
-                ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(widget.post.description)),
           ),
           postMarkers.isEmpty
-              ? Text('This post has no images')
+              ? Container(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Padding(
+                        padding: EdgeInsets.only(top: 20.0),
+                        child: Text(
+                          "This post has no images",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
               : CarouselWidget(postMarkers),
           // CarouselSlider(
           //     items: images.map((url) {
