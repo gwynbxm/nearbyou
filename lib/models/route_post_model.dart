@@ -39,7 +39,7 @@ class RoutePost {
 
   factory RoutePost.fromMap(Map<String, dynamic> json) {
     return RoutePost(
-      routePostId: json['routePostId'],
+      routePostId: json['postId'],
       description: json['description'] ?? '',
       // routeMarkers: json['routeMarkers'],
       routeMarkerIds: List<String>.from(json['routeMarkers'])

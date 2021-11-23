@@ -13,16 +13,19 @@ import 'package:flutter/material.dart';
 import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/models/route_post_model.dart';
 import 'package:nearbyou/utilities/constants/constants.dart';
+import 'package:nearbyou/utilities/services/firebase_services/firestore.dart';
 import 'package:nearbyou/utilities/ui/components/custom_dialog_box.dart';
 import 'package:nearbyou/utilities/ui/components/progress_icon.dart';
 import 'package:nearbyou/utilities/ui/components/image_full_view.dart';
+import 'package:nearbyou/utilities/ui/palette.dart';
 import 'package:nearbyou/views/profile/components/profile_carousel_widget.dart';
 
 class RoutePostWidget extends StatefulWidget {
   final User user;
   final RoutePost post;
+  final VoidCallback onDelete;
 
-  const RoutePostWidget(this.user, this.post);
+  const RoutePostWidget(this.user, this.post, {this.onDelete});
 
   @override
   _RoutePostWidgetState createState() => _RoutePostWidgetState();
@@ -41,6 +44,7 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
     super.initState();
     getPostMarkers();
     // getImages();
+    print(widget.post.routePostId);
   }
 
   getPostMarkers() async {
@@ -106,6 +110,7 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
                     child: ListTile(
                       leading: Icon(Icons.delete),
                       title: Text('Delete'),
+                      onTap: widget.onDelete,
                     ),
                   ),
                 ];

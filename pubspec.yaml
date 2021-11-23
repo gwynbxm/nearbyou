@@ -68,6 +68,8 @@ dependencies:
 
   timeline_list: ^0.0.5
 
+  vector_math: ^2.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -15,6 +15,7 @@ import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/models/route_post_model.dart';
 import 'package:nearbyou/models/user_profile_model.dart';
 import 'package:nearbyou/utilities/constants/constants.dart';
+import 'package:vector_math/vector_math.dart';
 
 class DatabaseServices {
   static Future<void> addUser(
@@ -84,82 +85,33 @@ class DatabaseServices {
     return markerDocId;
   }
 
-  static Future<List<RouteMarker>> getNearby(GeoPoint selected) async {
-    List<RouteMarker> allMarkers = [];
-    final geo = Geoflutterfire();
-
-    //create geofirepoint
-    GeoFirePoint center =
-        geo.point(latitude: selected.latitude, longitude: selected.longitude);
-
-    double radius = 10.0; // in kilometers
-    String field = 'position';
-
-    Stream<List<DocumentSnapshot>> stream = geo
-        .collection(collectionRef: postMarkersCollection)
-        .within(center: center, radius: radius, field: field, strictMode: true);
-
-    stream.listen((List<DocumentSnapshot> doc) {
-      doc.forEach((element) {
-        String markerId = element['markerID'];
-        RouteCoordinates position = element['position'];
-        // GeoFirePoint position = element['position'];
-        RouteMarker value =
-            RouteMarker(markerID: markerId, coordinates: position);
-        allMarkers.add(value);
-      });
-
-      print("Number of nearby places: " + doc.length.toString());
-    });
-
-    print("number of neighbors: " + stream.length.toString());
-    return allMarkers;
+  static Future<void> deletePostData(
+    String selectedPostId,
+    List<String> postMarkerIds,
+  ) async {
+    //if the post has no markers
+    if (postMarkerIds == null) {
+      // delete the post
+      await deletePost(selectedPostId);
+    } else {
+      //if post has existing markers
+      //delete markers of the post first
+      for (int i = 0; i < postMarkerIds.length; i++) {
+        postMarkersCollection.doc(postMarkerIds[i]).delete().whenComplete(() {
+          print("marker deleted");
+        }).catchError((e) {
+          print(e);
+        });
+      }
+      await deletePost(selectedPostId);
+    }
   }
 
-  static Future<List<RouteMarker>> getNearbyFBMarkers(GeoPoint center) async {
-    List<RouteMarker> allMarkers = [];
-    double centerLat = center.latitude;
-    double centerLng = center.longitude;
-
-    double distance = 30;
-    double lat = 0.0144927536231884;
-    double lng = 0.0181818181818182;
-
-    double lowerLat = centerLat - (lat * distance);
-    double lowerLng = centerLng - (lng * distance);
-
-    double greaterLat = centerLat + (lat * distance);
-    double greaterLng = centerLng + (lat * distance);
-
-    final lesserGP = GeoPoint(lowerLat, lowerLng);
-    final greaterGP = GeoPoint(greaterLat, greaterLng);
-
-    // filter out the nearby coordinates
-    await postMarkersCollection
-        .where(
-          'position.geopoint',
-          isGreaterThan: lesserGP,
-          isLessThan: greaterGP,
-        )
-        .get()
-        .then((value) {
-      value.docs.forEach((snap) {
-        String markerId = snap['markerID'];
-        // GeoPoint coordinates = snap['coordinates'];
-
-        // GeoFirePoint coordinates = snap['position']['geopoint'];
-
-        RouteCoordinates coordinates = RouteCoordinates(
-            geoHash: snap['position']['geohash'],
-            geoPoint: snap['position']['geopoint']);
-
-        RouteMarker value =
-            RouteMarker(markerID: markerId, coordinates: coordinates);
-
-        allMarkers.add(value);
-      });
+  static Future<void> deletePost(String selectedPostId) async {
+    await postCollection.doc(selectedPostId).delete().whenComplete(() {
+      print("post deleted");
+    }).catchError((e) {
+      print(e);
     });
-
-    return allMarkers;
   }
 }

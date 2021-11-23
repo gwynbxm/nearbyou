@@ -247,11 +247,63 @@ class _ProfileViewState extends State<ProfileView> {
           shrinkWrap: true,
           itemCount: routePostsList.length,
           itemBuilder: (context, index) {
-            return RoutePostWidget(_auth.currentUser, routePostsList[index]);
+            print(routePostsList.length);
+            return RoutePostWidget(
+              _auth.currentUser,
+              routePostsList[index],
+              onDelete: () => removeItem(index),
+            );
           },
         ),
       );
     }
     // });
+  }
+
+  void removeItem(int index) {
+    //ask if they are sure they want to delete the post
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return CustomDialogBox(
+            icon: Icons.warning,
+            bgAvatarColor: Colors.redAccent,
+            iconColor: Colors.white,
+            dialogTitle: 'Delete Post?',
+            dialogSubtitle: 'Do you want to delete this post?',
+            leftButtonText: 'Cancel',
+            leftButtonTextColor: Colors.black,
+            onPressedLeftButton: () => Navigator.of(context).pop(),
+            rightButtonText: 'Delete',
+            rightButtonTextColor: primaryColor,
+            onPressedRightButton: () async {
+              print(index);
+              await DatabaseServices.deletePostData(
+                  routePostsList.elementAt(index).routePostId,
+                  routePostsList.elementAt(index).routeMarkerIds);
+              Navigator.of(context).pop();
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return CustomDialogBox(
+                      icon: Icons.done,
+                      bgAvatarColor: Colors.green,
+                      iconColor: Colors.white,
+                      dialogTitle: 'Post deleted!',
+                      dialogSubtitle: 'The post has been deleted successfully!',
+                      rightButtonText: 'Dismiss',
+                      rightButtonTextColor: primaryColor,
+                      onPressedRightButton: () {
+                        Navigator.of(context).pop();
+                        setState(() {
+                          routePostsList = List.from(routePostsList)
+                            ..removeAt(index);
+                        });
+                      },
+                    );
+                  });
+            },
+          );
+        });
   }
 }
