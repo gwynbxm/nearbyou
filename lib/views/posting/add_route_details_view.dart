@@ -1,13 +1,14 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 18/8/21 4:54 PM
+ * Last modified 24/11/21 3:03 PM
  */
 
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/utilities/ui/components/custom_dialog_box.dart';
@@ -37,6 +38,8 @@ class _AddRouteDetailsViewState extends State<AddRouteDetailsView> {
   List<String> images = [];
 
   ScrollController _imageScrollCon = ScrollController();
+
+  RouteMarker routeMarker;
 
   @override
   void initState() {
@@ -111,8 +114,13 @@ class _AddRouteDetailsViewState extends State<AddRouteDetailsView> {
         });
   }
 
+  //TODO: how to compress images in order to not exceed the limit of base64 strings
   _cameraImage() async {
-    PickedFile img = await ImagePicker().getImage(source: ImageSource.camera);
+    PickedFile img = await ImagePicker().getImage(
+        source: ImageSource.camera,
+        maxWidth: 400,
+        maxHeight: 400,
+        imageQuality: 30);
     setState(() {
       _pickedImages.add(File(img.path));
       final bytes = File(img.path).readAsBytesSync();
@@ -124,7 +132,11 @@ class _AddRouteDetailsViewState extends State<AddRouteDetailsView> {
   }
 
   _galleryImage() async {
-    PickedFile img = await ImagePicker().getImage(source: ImageSource.gallery);
+    PickedFile img = await ImagePicker().getImage(
+        source: ImageSource.gallery,
+        maxWidth: 400,
+        maxHeight: 400,
+        imageQuality: 30);
     setState(() {
       _pickedImages.add(File(img.path));
       // images.add(File(img.path).toString());
@@ -171,7 +183,6 @@ class _AddRouteDetailsViewState extends State<AddRouteDetailsView> {
     widget.routeMarker.title = _titleCon.text ?? '';
     widget.routeMarker.caption = _captionCon.text ?? '';
     widget.routeMarker.imageList = images ?? '';
-
     //check for blank. if blank
     if (_titleCon.text.isEmpty || _captionCon.text.isEmpty || images.isEmpty) {
       return showDialog(
@@ -209,8 +220,8 @@ class _AddRouteDetailsViewState extends State<AddRouteDetailsView> {
               rightButtonText: 'Dismiss',
               rightButtonTextColor: primaryColor,
               onPressedRightButton: () {
-                Navigator.pop(context, widget.routeMarker);
                 Navigator.of(context).pop();
+                Navigator.pop(context, widget.routeMarker);
               },
             );
           });

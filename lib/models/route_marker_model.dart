@@ -1,7 +1,7 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 18/8/21 4:49 PM
+ * Last modified 24/11/21 2:07 PM
  */
 
 import 'dart:io';
@@ -41,7 +41,7 @@ class RouteMarker {
   );
 
   Map<String, dynamic> toMap() => {
-        'routeMarkerDocID': routeMarkerDocID,
+        'routeMarkerDocID': routeMarkerDocID ?? '',
         'markerID': markerID,
         'title': title ?? '',
         'caption': caption ?? '',

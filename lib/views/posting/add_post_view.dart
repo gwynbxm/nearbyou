@@ -1,7 +1,7 @@
 /*
  * Created by Gwyn Bong Xiao Min
  * Copyright (c) 2021. All rights reserved.
- * Last modified 18/8/21 4:51 PM
+ * Last modified 24/11/21 3:10 PM
  */
 
 import 'dart:async';
@@ -61,6 +61,8 @@ class _AddPostViewState extends State<AddPostView> {
 
   bool isLocationSelected = false;
   bool isMarkerAdded = false;
+  bool isMarkerPosted = false;
+  bool isPosted = false;
 
   final geo = Geoflutterfire();
 
@@ -211,7 +213,10 @@ class _AddPostViewState extends State<AddPostView> {
     for (int i = 0; i < routeMarkerList.length; i++) {
       // if both id is the same, activate onTap function and enable managing of marker data
       if (MarkerId(routeMarkerList[i].markerID) == tappedMarkerId) {
-        routeMarker = routeMarkerList[i];
+        setState(() {
+          routeMarker = routeMarkerList[i];
+          print('markerId' + routeMarker.markerID.toString());
+        });
       }
     }
     showModalBottomSheet(
@@ -269,6 +274,7 @@ class _AddPostViewState extends State<AddPostView> {
   // add marker details received from AddRouteDetailsView screen
   void _addRouteData(BuildContext context, RouteMarker routeMarker) async {
     //this waits for the marker that is updated with data
+
     final updatedMarkerData = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -279,70 +285,82 @@ class _AddPostViewState extends State<AddPostView> {
     if (updatedMarkerData != null) {
       print(
           'Marker passed back from AddRouteData' + updatedMarkerData.markerID);
-      for (int i = 0; i < routeMarkerList.length; i++) {
-        if (routeMarkerList[i].markerID ==
-            updatedMarkerData.markerID.toString()) {
-          setState(() {
-            routeMarkerList[i].title = updatedMarkerData.title;
-            routeMarkerList[i].caption = updatedMarkerData.caption;
-            routeMarkerList[i].imageList =
-                List.from(updatedMarkerData.imageList);
-          });
-        }
-      }
+      print('Title passed back from AddRouteData' + updatedMarkerData.title);
+      setState(() {
+        final index = routeMarkerList.indexWhere(
+            (marker) => marker.markerID == updatedMarkerData.markerID);
+        routeMarkerList[index] = updatedMarkerData;
+        print('index ' + index.toString());
+        print('Title saved in respective index in the list ' +
+            routeMarkerList[index].title);
+      });
+
+      // for (int i = 0; i < routeMarkerList.length; i++) {
+      //   if (routeMarkerList[i].markerID ==
+      //       updatedMarkerData.markerID.toString()) {
+      //     setState(() {
+      //       routeMarkerList[i].title = updatedMarkerData.title;
+      //       routeMarkerList[i].caption = updatedMarkerData.caption;
+      //       routeMarkerList[i].imageList =
+      //           List.from(updatedMarkerData.imageList);
+      //     });
+      //   }
+      // }
     }
+  }
+
+  popUpDialog() {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return CustomDialogBox(
+            icon: Icons.warning,
+            bgAvatarColor: Colors.redAccent,
+            iconColor: Colors.white,
+            dialogTitle: 'Oh no!',
+            dialogSubtitle:
+                'Noticed there are fields left blank, are you sure you want to post?',
+            leftButtonText: 'Cancel',
+            rightButtonText: 'Post',
+            leftButtonTextColor: Colors.black,
+            rightButtonTextColor: primaryColor,
+            onPressedLeftButton: () => Navigator.of(context).pop(),
+            onPressedRightButton: () {
+              Navigator.of(context).pop();
+              addToDatabase();
+            },
+          );
+        });
   }
 
   // store into post and its respective routemarkers into firestore
   _checkPost() async {
-    bool isMarkerPosted = false;
-    bool isPosted = false;
-
-    if (routeMarkerList != null) {
+    if (routeMarkerList.isEmpty) {
+      //if either one empty, still post
+      popUpDialog();
+    } else if (_postDescCon.text.isEmpty) {
+      popUpDialog();
+    } else if (routeMarkerList.isNotEmpty) {
+      //TODO: perhaps due to the image size
       for (int i = 0; i < routeMarkerList.length; i++) {
         markerDocId =
             await DatabaseServices.addMarkersToPost(routeMarkerList[i]);
         setState(() {
-          isMarkerPosted = true;
-          if (markerDocId != null) {
+          if (markerDocId.isNotEmpty) {
             routeMarkerIdsList.add(markerDocId);
+            isMarkerPosted = true;
           }
+          print('Number of marker id ' + routeMarkerIdsList.length.toString());
         });
       }
     }
+
     if (isMarkerPosted) {
       addToDatabase();
-    }
-
-    // means markers existed and added into firestore
-    if (_postDescCon.text.isEmpty || routeMarkerList == null) {
-      return showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return CustomDialogBox(
-              icon: Icons.warning,
-              bgAvatarColor: Colors.redAccent,
-              iconColor: Colors.white,
-              dialogTitle: 'Oh no!',
-              dialogSubtitle:
-                  'Noticed there are fields left blank, are you sure you want to post?',
-              leftButtonText: 'Cancel',
-              rightButtonText: 'Post',
-              leftButtonTextColor: Colors.black,
-              rightButtonTextColor: primaryColor,
-              onPressedLeftButton: () => Navigator.of(context).pop(),
-              onPressedRightButton: () async {
-                Navigator.of(context).pop();
-                addToDatabase();
-              },
-            );
-          });
     }
   }
 
   addToDatabase() async {
-    bool isPosted = false;
-
     String description = _postDescCon.text ?? '';
 
     //it stores in firestore using the img string passed from the other screen
@@ -350,32 +368,28 @@ class _AddPostViewState extends State<AddPostView> {
       createdBy: widget.currentUser,
       routeMarkerIds: routeMarkerIdsList,
       description: description,
+      dateTimePosted: Timestamp.fromDate(DateTime.now()),
     );
 
     await DatabaseServices.addPost(post);
-    setState(() {
-      isPosted = true;
-    });
 
-    if (isPosted) {
-      return showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return CustomDialogBox(
-              icon: Icons.check,
-              bgAvatarColor: Colors.green,
-              iconColor: Colors.white,
-              dialogTitle: 'Post Created!',
-              dialogSubtitle: 'Awesome! Continue sharing with us more!',
-              rightButtonText: 'Dismiss',
-              rightButtonTextColor: primaryColor,
-              onPressedRightButton: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-              },
-            );
-          });
-    }
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return CustomDialogBox(
+            icon: Icons.check,
+            bgAvatarColor: Colors.green,
+            iconColor: Colors.white,
+            dialogTitle: 'Post Created!',
+            dialogSubtitle: 'Awesome! Continue sharing with us more!',
+            rightButtonText: 'Dismiss',
+            rightButtonTextColor: primaryColor,
+            onPressedRightButton: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+            },
+          );
+        });
   }
 
   @override
