@@ -12,16 +12,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/models/route_post_model.dart';
+import 'package:nearbyou/models/user_profile_model.dart';
 import 'package:nearbyou/utilities/constants/constants.dart';
 import 'package:nearbyou/utilities/services/firebase_services/firestore.dart';
 import 'package:nearbyou/utilities/ui/components/custom_dialog_box.dart';
 import 'package:nearbyou/utilities/ui/components/progress_icon.dart';
 import 'package:nearbyou/utilities/ui/components/image_full_view.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
-import 'package:nearbyou/views/profile/components/profile_carousel_widget.dart';
+import 'package:nearbyou/views/comment/comment_view.dart';
+import 'package:nearbyou/utilities/ui/components/carousel_widget.dart';
 
 class RoutePostWidget extends StatefulWidget {
-  final User user;
+  final UserData user;
   final RoutePost post;
   final VoidCallback onDelete;
 
@@ -79,12 +81,12 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
           ListTile(
             leading: CircleAvatar(
               radius: 24,
-              backgroundImage: widget.user.photoURL.isEmpty ?? true
+              backgroundImage: widget.user.profilePhoto.isEmpty ?? true
                   ? AssetImage('assets/images/default-profile.png')
-                  : NetworkImage(widget.user.photoURL),
+                  : NetworkImage(widget.user.profilePhoto),
             ),
             title: Text(
-              widget.user.displayName,
+              widget.user.name,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             subtitle: Text('12/08/2021, 10:52 AM'),
@@ -131,7 +133,7 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
                 // : Text('This post has no description'),
                 ),
           ),
-          postMarkers.isEmpty
+          postMarkers.length == 0
               ? Text('This post has no images')
               : CarouselWidget(
                   postMarkers), //TODO: it does not show all images from different markers
@@ -162,7 +164,17 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
             children: [
               IconButton(
                   icon: Icon(Icons.thumb_up_alt_outlined), onPressed: () {}),
-              IconButton(icon: Icon(Icons.comment), onPressed: () {}),
+              IconButton(
+                icon: Icon(Icons.comment),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => CommentView(
+                          routePost: widget.post,
+                          postMarkers: postMarkers,
+                          userData: widget.user)),
+                ),
+              ),
               IconButton(
                   icon: Icon(Icons.bookmark_border_outlined), onPressed: () {}),
               IconButton(icon: Icon(Icons.share), onPressed: () {}),

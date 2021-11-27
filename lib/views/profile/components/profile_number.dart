@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
 
 class ProfileNoButton extends StatelessWidget {
-  final String value;
+  final int value;
   final String text;
   const ProfileNoButton({Key key, this.value, this.text}) : super(key: key);
 
@@ -20,7 +20,7 @@ class ProfileNoButton extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            value,
+            value.toString(),
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 24,

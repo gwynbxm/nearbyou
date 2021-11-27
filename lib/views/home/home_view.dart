@@ -768,7 +768,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 context,
                 MaterialPageRoute(
                     builder: (context) =>
-                        ProfileView(userId: _auth.currentUser.uid)),
+                        ProfileView(profileId: _auth.currentUser.uid)),
               ),
             ),
             DrawerItem(
