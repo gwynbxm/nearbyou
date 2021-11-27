@@ -90,6 +90,10 @@ class _CommentViewState extends State<CommentView> {
           ),
           backgroundColor: Colors.transparent,
           elevation: 0,
+          title: Text(
+            'Comments',
+            style: TextStyle(color: Colors.black),
+          ),
         ),
         body: Stack(
           children: [
