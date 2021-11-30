@@ -11,7 +11,7 @@ class UserData {
   // String userId;
   String name;
   String username;
-  // String emailAddress;
+  String emailAddress;
   String profilePhoto;
   String biography;
   // List<UserData> friends;
@@ -21,7 +21,7 @@ class UserData {
     // this.userId,
     this.username,
     this.name,
-    // this.emailAddress,
+    this.emailAddress,
     this.profilePhoto,
     this.biography,
     // this.friends,
@@ -47,6 +47,7 @@ class UserData {
     return UserData(
         username: json['username'],
         name: json['name'],
+        emailAddress: json['emailAddress'],
         profilePhoto: json['profilePhoto'],
         biography: json['biography']);
   }
@@ -55,6 +56,7 @@ class UserData {
         // 'email': emailAddress,
         'username': username,
         'profilePhoto': profilePhoto,
+        'emailAddress': emailAddress,
       };
 
   Map<String, dynamic> editProfiletoJson() => {

@@ -161,13 +161,15 @@ class _ProfileViewState extends State<ProfileView> {
           Center(
             child: Column(
               children: [
-                Text(
-                  _auth.currentUser.displayName,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 28,
-                  ),
-                ),
+                userData.name == null
+                    ? SizedBox.shrink()
+                    : Text(
+                        userData.name,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 28,
+                        ),
+                      ),
                 Text(
                   '@' + userData.username,
                   style: TextStyle(
@@ -177,13 +179,15 @@ class _ProfileViewState extends State<ProfileView> {
                 SizedBox(
                   height: 10,
                 ),
-                Text(
-                  userData.biography,
-                  style: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    fontSize: 15,
-                  ),
-                ),
+                userData.biography == null
+                    ? SizedBox.shrink()
+                    : Text(
+                        userData.biography,
+                        style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          fontSize: 15,
+                        ),
+                      ),
               ],
             ),
           ),
@@ -249,7 +253,7 @@ class _ProfileViewState extends State<ProfileView> {
           shrinkWrap: true,
           itemCount: routePostsList.length,
           itemBuilder: (context, index) {
-            return RoutePostWidget(_auth.currentUser, routePostsList[index]);
+            return RoutePostWidget(userData, routePostsList[index]);
           },
         ),
       );

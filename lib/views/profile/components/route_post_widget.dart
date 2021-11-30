@@ -12,6 +12,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/models/route_post_model.dart';
+import 'package:nearbyou/models/user_profile_model.dart';
 import 'package:nearbyou/utilities/constants/constants.dart';
 import 'package:nearbyou/utilities/ui/components/custom_dialog_box.dart';
 import 'package:nearbyou/utilities/ui/components/progress_icon.dart';
@@ -19,10 +20,11 @@ import 'package:nearbyou/utilities/ui/components/image_full_view.dart';
 import 'package:nearbyou/views/profile/components/profile_carousel_widget.dart';
 
 class RoutePostWidget extends StatefulWidget {
-  final User user;
+  // final User user;
+  final UserData userData;
   final RoutePost post;
 
-  const RoutePostWidget(this.user, this.post);
+  const RoutePostWidget(this.userData, this.post);
 
   @override
   _RoutePostWidgetState createState() => _RoutePostWidgetState();
@@ -71,14 +73,19 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
           ListTile(
             leading: CircleAvatar(
               radius: 24,
-              backgroundImage: widget.user.photoURL.isEmpty ?? true
+              backgroundImage: widget.userData?.profilePhoto?.isEmpty ?? true
                   ? AssetImage('assets/images/default-profile.png')
-                  : NetworkImage(widget.user.photoURL),
+                  : NetworkImage(widget.userData.profilePhoto),
             ),
-            title: Text(
-              widget.user.displayName,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+            title: widget.userData.name == null
+                ? Text(
+                    widget.userData.username,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  )
+                : Text(
+                    widget.userData.name,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
             subtitle: Text('12/08/2021, 10:52 AM'),
             trailing: PopupMenuButton(
               itemBuilder: (context) {
