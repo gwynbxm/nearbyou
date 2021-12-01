@@ -5,6 +5,7 @@
  */
 
 import 'dart:async';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -37,6 +38,7 @@ import 'package:nearbyou/views/settings/main_settings_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:uuid/uuid.dart';
+import 'package:vector_math/vector_math.dart' as math;
 
 import 'components/drawer_item.dart';
 
@@ -92,6 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<RouteMarker> relatedNearbyMarkerList = [];
   bool isNearestMarkerTapped = false;
   // RouteCoordinates routeCoordinates;
+  List<RouteMarker> filteredNearby = [];
 
   final geo = Geoflutterfire();
 
@@ -178,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: LatLng(position.latitude, position.longitude),
-          zoom: 18,
+          zoom: 12,
         ),
       ),
     );
@@ -296,13 +299,51 @@ class _HomeScreenState extends State<HomeScreen> {
       ? panelController.close()
       : panelController.open();
 
-  // retrieve markers from firestore that is nearby the center coordinates
+  // get all markers and calculate the surroundings based on center point
   void getNearbyPlaces(GeoPoint center) async {
-    final result = await DatabaseServices.getNearbyFBMarkers(center);
-    // final result = await DatabaseServices.getNearby(center);
-    for (int i = 0; i < result.length; i++) {
-      final MarkerId id = MarkerId(result[i].markerID);
-      addNearestMarker(result[i]);
+    final result = await DatabaseServices.getAllMarkers();
+
+    double centerLat = center.latitude;
+    double centerLng = center.longitude;
+
+    double earthRad = 6371; //earth mean radius in km
+
+    double distance = 2;
+    //1km/40,000km * 360 degrees
+    double adjust = .008983112; // 1km in degrees at equator
+    double distToDeg = distance * adjust;
+
+    //boundary square box
+    double topLeftLat = centerLat + (distToDeg / 2);
+    double tLRatio = 1 / cos(math.radians(topLeftLat));
+    double topLeftLng = centerLng - (distToDeg * tLRatio);
+
+    double topRightLat = centerLat + (distToDeg / 2);
+    double tRRatio = 1 / cos(math.radians(topRightLat));
+    double topRightLng = centerLng - (distToDeg * tRRatio);
+
+    double btmLeftLat = centerLat - (distToDeg / 2);
+    double bLRatio = 1 / cos(math.radians(btmLeftLat));
+    double btmLeftLng = centerLng - (distToDeg * bLRatio);
+
+    double btmRightLat = centerLat - (distToDeg / 2);
+    double bRRatio = 1 / cos(math.radians(btmRightLat));
+    double btmRightLng = centerLng + (distToDeg * bRRatio);
+
+    final data = result.where((element) =>
+        element.location.latitude >= btmLeftLat &&
+        element.location.latitude <= topLeftLat);
+
+    if (data.length > 0) {
+      final dataA = data.where((element) =>
+          element.location.longitude >= btmLeftLng &&
+          element.location.longitude <= btmRightLng);
+      print(dataA.length);
+      if (dataA.length > 0) {
+        dataA.forEach((element) {
+          addNearestMarker(element);
+        });
+      }
     }
   }
 

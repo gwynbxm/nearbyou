@@ -10,6 +10,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:nearbyou/models/location_model.dart';
 import 'package:nearbyou/models/route_coordinates_model.dart';
 import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/models/route_post_model.dart';
@@ -143,7 +144,7 @@ class _AddPostViewState extends State<AddPostView> {
           markerID: markerId.toString(),
           coordinates: RouteCoordinates(
               geoHash: tappedLocation.hash, geoPoint: tappedLocation.geoPoint),
-          // coordinates: tappedLocation,
+          location: coordinates,
           routeOrder: markerCount);
 
       //add marker object to the list of markers
