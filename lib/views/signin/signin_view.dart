@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nearbyou/models/user_profile_model.dart';
-import 'package:nearbyou/utilities/helper/error_messages.dart';
 import 'package:nearbyou/utilities/helper/validator.dart';
 import 'package:nearbyou/utilities/services/firebase_services/authentication.dart';
 import 'package:nearbyou/utilities/services/firebase_services/firestore.dart';
