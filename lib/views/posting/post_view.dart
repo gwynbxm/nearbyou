@@ -11,6 +11,7 @@ import 'package:nearbyou/models/route_post_model.dart';
 import 'package:nearbyou/models/user_profile_model.dart';
 import 'package:nearbyou/utilities/constants/constants.dart';
 import 'package:nearbyou/utilities/ui/components/carousel_widget.dart';
+import 'package:nearbyou/views/comment/comment_view.dart';
 import 'package:timeago/timeago.dart' as timeAgo;
 
 class PostView extends StatefulWidget {
@@ -129,6 +130,29 @@ class _PostViewState extends State<PostView> {
                       ),
                     )
                   : CarouselWidget(postMarkers),
+              ButtonBar(
+                alignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                      icon: Icon(Icons.thumb_up_alt_outlined),
+                      onPressed: () {}),
+                  IconButton(
+                    icon: Icon(Icons.comment),
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => CommentView(
+                              routePost: widget.post,
+                              postMarkers: postMarkers,
+                              userData: widget.owner)),
+                    ),
+                  ),
+                  IconButton(
+                      icon: Icon(Icons.bookmark_border_outlined),
+                      onPressed: () {}),
+                  IconButton(icon: Icon(Icons.share), onPressed: () {}),
+                ],
+              )
             ],
           ),
         ),

@@ -82,6 +82,9 @@ class _SignInAuthState extends State<SignInAuth> {
         sharedPreferences.setBool('login', false);
         sharedPreferences.setString('email', result.email);
 
+        _emailCon.clear();
+        _pwdCon.clear();
+
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => HomeScreen()),

@@ -196,7 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       _getDetailsFromCoordinates(position.latitude, position.longitude);
-      // _onAddMarker(currPosition);
+      _onAddMarker(currPosition);
       animateCamera(currPosition);
       getNearbyPlaces(currPosition);
     });

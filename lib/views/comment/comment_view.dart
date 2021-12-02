@@ -268,17 +268,23 @@ class _CommentViewState extends State<CommentView> {
                 ),
                 title: Row(
                   children: [
-                    Text(
-                      commentator.username,
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: textLightColor),
+                    Expanded(
+                      flex: 1,
+                      child: Text(
+                        commentator.username,
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: textLightColor),
+                      ),
                     ),
-                    SizedBox(width: 5),
-                    Text(
-                      comment.comment,
-                      style: TextStyle(fontSize: 15),
+                    // SizedBox(width: 5),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        comment.comment,
+                        style: TextStyle(fontSize: 15),
+                      ),
                     )
                   ],
                 ),

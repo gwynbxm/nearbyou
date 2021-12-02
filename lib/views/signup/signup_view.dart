@@ -168,6 +168,10 @@ class _SignUpState extends State<SignUp> {
                   profilePhoto: result.photoURL.toString(),
                   emailAddress: result.email.toString());
               await DatabaseServices.addUser(result.uid, userProfile);
+              _usernameCon.clear();
+              _emailCon.clear();
+              _pwdCon.clear();
+              _cfmPwdCon.clear();
 
               Navigator.push(
                 context,
