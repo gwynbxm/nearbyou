@@ -14,17 +14,24 @@ import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/models/route_post_model.dart';
 import 'package:nearbyou/models/user_profile_model.dart';
 import 'package:nearbyou/utilities/constants/constants.dart';
+import 'package:nearbyou/utilities/services/firebase_services/firestore.dart';
 import 'package:nearbyou/utilities/ui/components/custom_dialog_box.dart';
 import 'package:nearbyou/utilities/ui/components/progress_icon.dart';
 import 'package:nearbyou/utilities/ui/components/image_full_view.dart';
-import 'package:nearbyou/views/profile/components/profile_carousel_widget.dart';
+import 'package:nearbyou/utilities/ui/palette.dart';
+import 'package:nearbyou/views/comment/comment_view.dart';
+import 'package:nearbyou/utilities/ui/components/carousel_widget.dart';
+import 'package:timeago/timeago.dart' as timeAgo;
 
 class RoutePostWidget extends StatefulWidget {
   // final User user;
-  final UserData userData;
+  // final UserData userData;
+  final UserData user;
   final RoutePost post;
+  final VoidCallback onDelete;
 
-  const RoutePostWidget(this.userData, this.post);
+  // const RoutePostWidget(this.userData, this.post);
+  const RoutePostWidget(this.user, this.post, {this.onDelete});
 
   @override
   _RoutePostWidgetState createState() => _RoutePostWidgetState();
@@ -42,6 +49,7 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
     super.initState();
     getPostMarkers();
     // getImages();
+    print(widget.post.routePostId);
   }
 
   getPostMarkers() async {
@@ -73,20 +81,27 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
           ListTile(
             leading: CircleAvatar(
               radius: 24,
-              backgroundImage: widget.userData?.profilePhoto?.isEmpty ?? true
+              backgroundImage: widget.user?.profilePhoto?.isEmpty ?? true
                   ? AssetImage('assets/images/default-profile.png')
-                  : NetworkImage(widget.userData.profilePhoto),
+                  : NetworkImage(widget.user.profilePhoto),
+              // backgroundImage: widget.user.profilePhoto.isEmpty ?? true
+              //     ? AssetImage('assets/images/default-profile.png')
+              //     : NetworkImage(widget.user.profilePhoto),
             ),
-            title: widget.userData.name == null
+            // title: Text(
+            //   widget.user.name,
+            //   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            // ),
+            title: widget.user.name == null
                 ? Text(
-                    widget.userData.username,
+                    widget.user.username,
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   )
                 : Text(
-                    widget.userData.name,
+                    widget.user.name,
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-            subtitle: Text('12/08/2021, 10:52 AM'),
+            subtitle: Text(timeAgo.format(widget.post.dateTimePosted.toDate())),
             trailing: PopupMenuButton(
               itemBuilder: (context) {
                 return [
@@ -109,6 +124,7 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
                     child: ListTile(
                       leading: Icon(Icons.delete),
                       title: Text('Delete'),
+                      onTap: widget.onDelete,
                     ),
                   ),
                 ];
@@ -176,7 +192,17 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
             children: [
               IconButton(
                   icon: Icon(Icons.thumb_up_alt_outlined), onPressed: () {}),
-              IconButton(icon: Icon(Icons.comment), onPressed: () {}),
+              IconButton(
+                icon: Icon(Icons.comment),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => CommentView(
+                          routePost: widget.post,
+                          postMarkers: postMarkers,
+                          userData: widget.user)),
+                ),
+              ),
               IconButton(
                   icon: Icon(Icons.bookmark_border_outlined), onPressed: () {}),
               IconButton(icon: Icon(Icons.share), onPressed: () {}),

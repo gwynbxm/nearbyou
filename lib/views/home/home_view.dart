@@ -783,16 +783,25 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             DrawerItem(
-                icon: Icons.person_outline_outlined,
-                text: 'Profile',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            ProfileView(userId: currentUserId())),
-                  );
-                }),
+              // icon: Icons.person_outline_outlined,
+              // text: 'Profile',
+              // onTap: () {
+              //   Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //         builder: (context) =>
+              //             ProfileView(userId: currentUserId())),
+              //   );
+              // }),
+              icon: Icons.person_outline_outlined,
+              text: 'Profile',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        ProfileView(profileId: _auth.currentUser.uid)),
+              ),
+            ),
             DrawerItem(
               icon: Icons.people,
               text: 'Search Community',

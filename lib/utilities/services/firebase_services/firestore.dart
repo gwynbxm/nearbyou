@@ -7,11 +7,9 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:firestore_helpers/firestore_helpers.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:nearbyou/models/location_model.dart';
+import 'package:nearbyou/models/post_comment_model.dart';
 import 'package:nearbyou/models/route_coordinates_model.dart';
 import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/models/route_post_model.dart';
@@ -138,12 +136,55 @@ class DatabaseServices {
             RouteMarker(markerID: markerId, coordinates: position);
         allMarkers.add(value);
       });
-
-      print("Number of nearby places: " + doc.length.toString());
     });
+  }
 
-    print("number of neighbors: " + stream.length.toString());
-    return allMarkers;
+  static Future<void> deletePostData(
+    String selectedPostId,
+    List<String> postMarkerIds,
+  ) async {
+    //if the post has no markers
+    if (postMarkerIds == null) {
+      // delete the post
+      await deletePost(selectedPostId);
+    } else {
+      //if post has existing markers
+      //delete markers of the post first
+      for (int i = 0; i < postMarkerIds.length; i++) {
+        postMarkersCollection.doc(postMarkerIds[i]).delete().whenComplete(() {
+          print("marker deleted");
+        }).catchError((e) {
+          print(e);
+        });
+      }
+      await deletePost(selectedPostId);
+    }
+  }
+
+  static Future<void> deletePost(String selectedPostId) async {
+    await postCollection.doc(selectedPostId).delete().whenComplete(() {
+      print("post deleted");
+    }).catchError((e) {
+      print(e);
+    });
+  }
+
+  //upload comments to specific post
+  static Future<void> uploadComment(String postId, PostComment comment) async {
+    await postCollection
+        .doc(postId)
+        .collection(comments)
+        .add(comment.toMap())
+        .then((DocumentReference doc) {
+          final String commentId = doc.id;
+          postCollection
+              .doc(postId)
+              .collection(comments)
+              .doc(commentId)
+              .update({'postCommentId': commentId});
+        })
+        .whenComplete(() => print("Comments uploaded"))
+        .catchError((e) => print(e));
   }
 
   //older version, but cant really work except displaying all markers
@@ -319,5 +360,62 @@ class DatabaseServices {
       });
     });
     return allNearbyMarkers;
+  }
+
+  static void followUser(String currentUser, String followingUserId) {
+    //currentUser is the one following another user profile (followingUserId)
+    //Add to its following
+    profileCollection
+        .doc(currentUser)
+        .collection(following)
+        .doc(followingUserId)
+        .update({'dateTimeFollowed': timestamp});
+
+    // add to the other party's followers
+    profileCollection
+        .doc(followingUserId)
+        .collection(followers)
+        .doc(currentUser)
+        .update({'dateTimeFollowing': timestamp});
+  }
+
+  static void unFollowUser(String currentUser, String unfollowUserId) {
+    //remove from its following
+    profileCollection
+        .doc(currentUser)
+        .collection(following)
+        .doc(unfollowUserId)
+        .get()
+        .then((doc) => doc.exists ?? doc.reference.delete());
+
+    //remove from the other party's followers
+    profileCollection
+        .doc(unfollowUserId)
+        .collection(followers)
+        .doc(currentUser)
+        .get()
+        .then((doc) => doc.exists ?? doc.reference.delete());
+  }
+
+  static Future<bool> isFollowing(
+      String currentUser, String followUserId) async {
+    DocumentSnapshot followingDoc = await profileCollection
+        .doc(followUserId)
+        .collection(following)
+        .doc(currentUser)
+        .get();
+    return followingDoc.exists;
+  }
+
+  static Future<int> followingNum(String id) async {
+    QuerySnapshot followNum =
+        await profileCollection.doc(id).collection(following).get();
+    return followNum.docs.length;
+  }
+
+  static Future<int> followerNum(String id) async {
+    QuerySnapshot followerNum =
+        await profileCollection.doc(id).collection(followers).get();
+    return followerNum.docs.length;
   }
 }

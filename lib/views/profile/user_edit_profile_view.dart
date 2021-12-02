@@ -159,7 +159,7 @@ class _EditProfileViewState extends State<EditProfileView> {
                   //   TODO: The following NoSuchMethodError was thrown building ProfileView(dirty, state: _ProfileViewState#4b89a): The getter 'username' was called on null. Receiver: null Tried calling: username
                   // TODO: upon going back without editing the profile
                   builder: (context) => ProfileView(
-                        userId: widget.userId,
+                        profileId: widget.userId,
                       )),
             ),
             color: Colors.black,

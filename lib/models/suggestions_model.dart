@@ -13,7 +13,6 @@ class Suggestions {
 
   @override
   String toString() {
-    // TODO: implement toString
     return 'Suggestions(placeId: $placeId, placeName: $placeName, description: $placeDesc)';
   }
 

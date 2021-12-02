@@ -36,6 +36,9 @@ dependencies:
   geo_firestore_flutter: ^0.1.2
   geoflutterfire: ^3.0.1
 
+#  firestore_helpers: ^4.0.0
+#  cloud_firestore: ^1.0.1
+
   # incorporating google places api
 #  flutter_google_places: "^0.3.0"
 
@@ -48,6 +51,7 @@ dependencies:
   firebase_core: "^1.4.0"
   firebase_auth: "^1.4.1"
   cloud_firestore: "^2.2.2"
+
   google_sign_in: "^5.1.0"
 
   shared_preferences: "^2.0.6"
@@ -63,6 +67,10 @@ dependencies:
   flutter_speed_dial: ^4.1.0
 
   timeline_list: ^0.0.5
+
+  vector_math: ^2.1.0
+
+  timeago: ^3.1.0
 
 dev_dependencies:
   flutter_test:

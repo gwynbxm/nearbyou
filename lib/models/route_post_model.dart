@@ -47,8 +47,7 @@ class RoutePost {
       routePostId: json['postId'],
       description: json['description'] ?? '',
       // routeMarkers: json['routeMarkers'],
-      routeMarkerIds: List<String>.from(json['routeMarkers'])
-          .toList(), // TODO:  Unhandled Exception: type 'List<dynamic>' is not a subtype of type 'List<String>'
+      routeMarkerIds: List<String>.from(json['routeMarkers']).toList(),
       createdBy: json['createdBy'],
       dateTimePosted: json['dateTimePosted'],
     );
