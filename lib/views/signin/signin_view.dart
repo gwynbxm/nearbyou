@@ -6,8 +6,10 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nearbyou/models/user_profile_model.dart';
+import 'package:nearbyou/utilities/helper/error_messages.dart';
 import 'package:nearbyou/utilities/helper/validator.dart';
 import 'package:nearbyou/utilities/services/firebase_services/authentication.dart';
 import 'package:nearbyou/utilities/services/firebase_services/firestore.dart';
@@ -58,6 +60,7 @@ class _SignInAuthState extends State<SignInAuth> {
 
   bool _isHidden = true;
   bool _isEmailVerified = false;
+  bool isLoading = false;
 
   void _toggle() {
     setState(() {
@@ -72,6 +75,7 @@ class _SignInAuthState extends State<SignInAuth> {
     FormState form = _formKey.currentState;
 
     if (form.validate()) {
+      // try {
       User result = await Auth().signIn(_emailCon.text, _pwdCon.text);
       if (result != null && result.emailVerified) {
         final SharedPreferences sharedPreferences =
@@ -86,9 +90,33 @@ class _SignInAuthState extends State<SignInAuth> {
       } else {
         _showVerifyEmailDialog();
       }
+      // } on PlatformException catch (e) {
+      //   _showErrorMsg(ErrorMsg.signInError(e.code));
+      //   throw (e);
+      // }
     } else {
       print('Form is invalid');
     }
+  }
+
+  void _showErrorMsg(String errorMsg) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CustomDialogBox(
+          icon: Icons.warning,
+          bgAvatarColor: Colors.redAccent,
+          iconColor: Colors.white,
+          dialogTitle: 'Oh no!',
+          dialogSubtitle: errorMsg,
+          rightButtonText: 'Dismiss',
+          rightButtonTextColor: primaryColor,
+          onPressedRightButton: () {
+            Navigator.of(context).pop();
+          },
+        );
+      },
+    );
   }
 
   void _showVerifyEmailDialog() {
@@ -178,7 +206,8 @@ class _SignInAuthState extends State<SignInAuth> {
                   onPressed: () async {
                     UserData userProfile = UserData(
                         username: _usernameCon.text,
-                        profilePhoto: result.photoURL.toString());
+                        profilePhoto: result.photoURL.toString(),
+                        emailAddress: result.email.toString());
                     await DatabaseServices.addUser(result.uid, userProfile);
 
                     Navigator.push(

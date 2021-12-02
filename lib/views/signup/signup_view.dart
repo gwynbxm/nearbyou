@@ -14,6 +14,7 @@ import 'package:nearbyou/utilities/ui/components/custom_dialog_box.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_button.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_input_field.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_pwd_field.dart';
+import 'package:nearbyou/utilities/ui/components/social_rounded_button.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
 import 'package:nearbyou/views/home/home_view.dart';
 import 'package:nearbyou/views/signin/signin_view.dart';
@@ -42,6 +43,7 @@ class SignUp extends StatefulWidget {
 
 class _SignUpState extends State<SignUp> {
   final _formKey = GlobalKey<FormState>();
+  final _googleUsernameKey = GlobalKey<FormState>();
 
   final _focusUsername = FocusNode();
   final _focusEmail = FocusNode();
@@ -75,7 +77,8 @@ class _SignUpState extends State<SignUp> {
       User user = await Auth()
           .register(_emailCon.text, _pwdCon.text, _usernameCon.text);
       if (user != null) {
-        UserData userProfile = UserData(username: _usernameCon.text);
+        UserData userProfile =
+            UserData(username: _usernameCon.text, emailAddress: _emailCon.text);
         await DatabaseServices.addUser(user.uid, userProfile);
 
         return showDialog(
@@ -122,6 +125,89 @@ class _SignUpState extends State<SignUp> {
       }
     } else {
       print('Form is invalid');
+    }
+  }
+
+  void validateGoogleSignIn() async {
+    User result = await Auth().signInWithGoogle(context);
+    if (result != null) {
+      //prompt pop up dialog to enter username
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return CustomDialogBox(
+            icon: Icons.auto_awesome,
+            bgAvatarColor: iconColor,
+            iconColor: Colors.white,
+            dialogTitle: 'Create a username',
+            dialogSubtitle:
+                'To be a part of the Nearbyou community, create a username of your own!',
+            widget: Form(
+              key: _googleUsernameKey,
+              child: TextFormField(
+                controller: _usernameCon,
+                decoration: InputDecoration(
+                    icon: Icon(
+                      Icons.account_box_rounded,
+                      color: primaryColor,
+                    ),
+                    hintText: 'Username',
+                    border: InputBorder.none,
+                    errorStyle: TextStyle(color: Colors.red)),
+                // TODO: Implement check for username existing in firestore
+              ),
+            ),
+            leftButtonText: 'Cancel',
+            rightButtonText: 'Submit',
+            leftButtonTextColor: Colors.black,
+            rightButtonTextColor: primaryColor,
+            onPressedLeftButton: () => Navigator.of(context).pop(),
+            onPressedRightButton: () async {
+              UserData userProfile = UserData(
+                  username: _usernameCon.text,
+                  profilePhoto: result.photoURL.toString(),
+                  emailAddress: result.email.toString());
+              await DatabaseServices.addUser(result.uid, userProfile);
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => HomeScreen()),
+              );
+            },
+          );
+        },
+      );
+      // showDialog(
+      //     context: context,
+      //     builder: (context) {
+      //       return AlertDialog(
+      //         title: Text("Enter username"),
+      //         content: ,
+      //         actions: [
+      //           TextButton(
+      //             child: Text("SUBMIT"),
+      //             onPressed: () async {
+      //               UserData userProfile = UserData(
+      //                   username: _usernameCon.text,
+      //                   profilePhoto: result.photoURL.toString());
+      //               await DatabaseServices.addUser(result.uid, userProfile);
+      //
+      //               Navigator.push(
+      //                 context,
+      //                 MaterialPageRoute(builder: (context) => HomeScreen()),
+      //               );
+      //             },
+      //           ),
+      //           TextButton(
+      //             child: Text("SKIP"),
+      //             onPressed: () => Navigator.push(
+      //               context,
+      //               MaterialPageRoute(builder: (context) => HomeScreen()),
+      //             ),
+      //           ),
+      //         ],
+      //       );
+      //     });
     }
   }
 
@@ -211,6 +297,15 @@ class _SignUpState extends State<SignUp> {
                           onPressed: () => validateRegister(),
                           color: primaryColor,
                           text: "SIGN UP",
+                        ),
+                        SizedBox(height: 5.0),
+                        SocialRoundedButton(
+                          // onPressed: () => Auth().signInWithGoogle(),
+                          color: Colors.white70,
+                          onPressed: () => validateGoogleSignIn(),
+                          icon: AssetImage('assets/icons/google-logo.png'),
+                          text: "SIGN UP WITH GOOGLE",
+                          textColor: Colors.black,
                         ),
                         SizedBox(height: 15.0),
                         // CheckSignInOrSignUp(

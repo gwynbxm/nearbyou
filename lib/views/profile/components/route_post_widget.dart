@@ -12,6 +12,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/models/route_post_model.dart';
+import 'package:nearbyou/models/user_profile_model.dart';
 import 'package:nearbyou/utilities/constants/constants.dart';
 import 'package:nearbyou/utilities/ui/components/custom_dialog_box.dart';
 import 'package:nearbyou/utilities/ui/components/progress_icon.dart';
@@ -19,10 +20,11 @@ import 'package:nearbyou/utilities/ui/components/image_full_view.dart';
 import 'package:nearbyou/views/profile/components/profile_carousel_widget.dart';
 
 class RoutePostWidget extends StatefulWidget {
-  final User user;
+  // final User user;
+  final UserData userData;
   final RoutePost post;
 
-  const RoutePostWidget(this.user, this.post);
+  const RoutePostWidget(this.userData, this.post);
 
   @override
   _RoutePostWidgetState createState() => _RoutePostWidgetState();
@@ -37,7 +39,6 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getPostMarkers();
     // getImages();
@@ -49,19 +50,16 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
     });
 
     if (widget.post != null) {
-      //marker id list
-      for (int i = 0; i < widget.post.routeMarkerIds.length; i++) {
-        //get markers related to the post
-        QuerySnapshot snap = await postMarkersCollection
-            .where('routeMarkerDocID', isEqualTo: widget.post.routeMarkerIds[i])
-            .get();
-        setState(() {
-          isLoading = false;
-          postMarkers =
-              snap.docs.map((doc) => RouteMarker.fromDocument(doc)).toList();
-          print('Number of Markers ' + postMarkers.length.toString());
-        });
-      }
+      QuerySnapshot snap = await postMarkersCollection
+          .where('routeMarkerDocID', whereIn: widget.post.routeMarkerIds)
+          .get();
+      setState(() {
+        isLoading = false;
+
+        postMarkers =
+            snap.docs.map((doc) => RouteMarker.fromDocument(doc)).toList();
+        print('Number of Markers ' + postMarkers.length.toString());
+      });
     }
   }
 
@@ -75,14 +73,19 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
           ListTile(
             leading: CircleAvatar(
               radius: 24,
-              backgroundImage: widget.user.photoURL.isEmpty ?? true
+              backgroundImage: widget.userData?.profilePhoto?.isEmpty ?? true
                   ? AssetImage('assets/images/default-profile.png')
-                  : NetworkImage(widget.user.photoURL),
+                  : NetworkImage(widget.userData.profilePhoto),
             ),
-            title: Text(
-              widget.user.displayName,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+            title: widget.userData.name == null
+                ? Text(
+                    widget.userData.username,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  )
+                : Text(
+                    widget.userData.name,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
             subtitle: Text('12/08/2021, 10:52 AM'),
             trailing: PopupMenuButton(
               itemBuilder: (context) {
@@ -119,17 +122,33 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
             ),
           ),
           // buildPostContent(post),
-          Center(
-            child: Padding(
-                padding: EdgeInsets.all(10.0),
-                child: Text(widget.post.description)
-                // : Text('This post has no description'),
-                ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(widget.post.description)),
           ),
           postMarkers.isEmpty
-              ? Text('This post has no images')
-              : CarouselWidget(
-                  postMarkers), //TODO: it does not show all images from different markers
+              ? Container(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Padding(
+                        padding: EdgeInsets.only(top: 20.0),
+                        child: Text(
+                          "This post has no images",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : CarouselWidget(postMarkers),
           // CarouselSlider(
           //     items: images.map((url) {
           //       return Container(

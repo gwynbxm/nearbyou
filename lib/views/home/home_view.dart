@@ -5,6 +5,7 @@
  */
 
 import 'dart:async';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,6 +21,7 @@ import 'package:nearbyou/models/places_model.dart';
 import 'package:nearbyou/models/route_coordinates_model.dart';
 import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/models/suggestions_model.dart';
+import 'package:nearbyou/models/user_profile_model.dart';
 import 'package:nearbyou/utilities/constants/constants.dart';
 import 'package:nearbyou/utilities/services/firebase_services/authentication.dart';
 import 'package:nearbyou/utilities/services/api_services/google_places.dart';
@@ -36,6 +38,7 @@ import 'package:nearbyou/views/settings/main_settings_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:uuid/uuid.dart';
+import 'package:vector_math/vector_math.dart' as math;
 
 import 'components/drawer_item.dart';
 
@@ -69,6 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
   MarkerId selectedMarker;
 
   // List<GeoPoint> markersFromFirestore = [];
+  Map<PolylineId, Polyline> _polylines = <PolylineId, Polyline>{};
 
   final ScrollController scrollController = ScrollController();
 
@@ -90,6 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<RouteMarker> relatedNearbyMarkerList = [];
   bool isNearestMarkerTapped = false;
   // RouteCoordinates routeCoordinates;
+  List<RouteMarker> filteredNearby = [];
 
   final geo = Geoflutterfire();
 
@@ -102,21 +107,15 @@ class _HomeScreenState extends State<HomeScreen> {
     getCurrentUser();
   }
 
-  // User cUser;
-  // void getCurrentUser() {
-  //   User currentUser = FirebaseAuth.instance.currentUser;
-  //   if (currentUser != null) {
-  //     setState(() {
-  //       cUser = currentUser;
-  //     });
-  //   }
-  // }
-
   getCurrentUser() async {
     sharedPreferences = await SharedPreferences.getInstance();
     setState(() {
       displayEmail = sharedPreferences.getString('email');
     });
+  }
+
+  currentUserId() {
+    return _auth.currentUser.uid; //get current signed in user
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -182,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: LatLng(position.latitude, position.longitude),
-          zoom: 18,
+          zoom: 12,
         ),
       ),
     );
@@ -284,14 +283,14 @@ class _HomeScreenState extends State<HomeScreen> {
             MaterialPageRoute(
                 builder: (context) => AddPostView(
                       destPointData: routeMarker,
-                      currentUser: _auth.currentUser.uid,
+                      currentUser: currentUserId(),
                     )),
           )
         : Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (context) => AddPostView(
-                      currentUser: _auth.currentUser.uid.toString(),
+                      currentUser: currentUserId(),
                     )),
           );
   }
@@ -300,13 +299,51 @@ class _HomeScreenState extends State<HomeScreen> {
       ? panelController.close()
       : panelController.open();
 
-  // retrieve markers from firestore that is nearby the center coordinates
+  // get all markers and calculate the surroundings based on center point
   void getNearbyPlaces(GeoPoint center) async {
-    final result = await DatabaseServices.getNearbyFBMarkers(center);
-    // final result = await DatabaseServices.getNearby(center);
-    for (int i = 0; i < result.length; i++) {
-      final MarkerId id = MarkerId(result[i].markerID);
-      addNearestMarker(result[i]);
+    final result = await DatabaseServices.getAllMarkers();
+
+    double centerLat = center.latitude;
+    double centerLng = center.longitude;
+
+    double earthRad = 6371; //earth mean radius in km
+
+    double distance = 2;
+    //1km/40,000km * 360 degrees
+    double adjust = .008983112; // 1km in degrees at equator
+    double distToDeg = distance * adjust;
+
+    //boundary square box
+    double topLeftLat = centerLat + (distToDeg / 2);
+    double tLRatio = 1 / cos(math.radians(topLeftLat));
+    double topLeftLng = centerLng - (distToDeg * tLRatio);
+
+    double topRightLat = centerLat + (distToDeg / 2);
+    double tRRatio = 1 / cos(math.radians(topRightLat));
+    double topRightLng = centerLng - (distToDeg * tRRatio);
+
+    double btmLeftLat = centerLat - (distToDeg / 2);
+    double bLRatio = 1 / cos(math.radians(btmLeftLat));
+    double btmLeftLng = centerLng - (distToDeg * bLRatio);
+
+    double btmRightLat = centerLat - (distToDeg / 2);
+    double bRRatio = 1 / cos(math.radians(btmRightLat));
+    double btmRightLng = centerLng + (distToDeg * bRRatio);
+
+    final data = result.where((element) =>
+        element.location.latitude >= btmLeftLat &&
+        element.location.latitude <= topLeftLat);
+
+    if (data.length > 0) {
+      final dataA = data.where((element) =>
+          element.location.longitude >= btmLeftLng &&
+          element.location.longitude <= btmRightLng);
+      print(dataA.length);
+      if (dataA.length > 0) {
+        dataA.forEach((element) {
+          addNearestMarker(element);
+        });
+      }
     }
   }
 
@@ -705,6 +742,7 @@ class _HomeScreenState extends State<HomeScreen> {
       // google map type: satellite/hybrid/normal/terrain
       // markers: _marker,
       markers: Set<Marker>.of(_markers.values),
+      polylines: Set<Polyline>.of(_polylines.values),
       onCameraMove: _onCameraMove,
       onTap: _onMapTapped,
     );
@@ -715,66 +753,49 @@ class _HomeScreenState extends State<HomeScreen> {
       child: SafeArea(
         child: ListView(
           children: [
-            // FutureBuilder(
-            //   future: DatabaseServices.getUser(_auth.currentUser.uid),
-            //   builder: (context, snapshot) {
-            //     if (!snapshot.hasData) {
-            //       return Container(
-            //           alignment: FractionalOffset.center,
-            //           child: CircularProgressIndicator());
-            //     }
-            //
-            //     UserData userData = UserData.fromDocument(snapshot.data);
-            //     return UserAccountsDrawerHeader(
-            //       currentAccountPicture: CircleAvatar(
-            //         backgroundColor: Colors.white,
-            //         backgroundImage: userData?.profilePhoto?.isEmpty ?? true
-            //             ? AssetImage('assets/images/default-profile.png')
-            //             : NetworkImage(userData.profilePhoto),
-            //       ),
-            //       accountName: Text(userData.username),
-            //       accountEmail: Text(userData.emailAddress),
-            //       arrowColor: Colors.white,
-            //       onDetailsPressed: () {},
-            //       decoration: BoxDecoration(
-            //           color: bgColor,
-            //           borderRadius: BorderRadius.only(
-            //               bottomLeft: Radius.circular(20),
-            //               bottomRight: Radius.circular(20))),
-            //     );
-            //   },
-            // ),
-            UserAccountsDrawerHeader(
-              currentAccountPicture: CircleAvatar(
-                backgroundColor: Colors.white,
-                backgroundImage: _auth.currentUser.photoURL.isEmpty ?? true
-                    ? AssetImage('assets/images/default-profile.png')
-                    : NetworkImage(_auth.currentUser.photoURL),
-              ),
-              accountName: Text(_auth.currentUser
-                  .displayName), // TODO: Resolve the problem of google sign-in & email sign-in displayname/username issue
-              accountEmail: Text(_auth.currentUser.email),
-              arrowColor: Colors.white,
-              onDetailsPressed: () {},
-              decoration: BoxDecoration(
-                  color: bgColor,
-                  borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(20),
-                      bottomRight: Radius.circular(20))),
+            FutureBuilder(
+              future: DatabaseServices.getUser(currentUserId()),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Container(
+                      alignment: FractionalOffset.center,
+                      child: CircularProgressIndicator());
+                }
+
+                UserData userData = UserData.fromDocument(snapshot.data);
+                return UserAccountsDrawerHeader(
+                  currentAccountPicture: CircleAvatar(
+                    backgroundColor: Colors.white,
+                    backgroundImage: userData?.profilePhoto?.isEmpty ?? true
+                        ? AssetImage('assets/images/default-profile.png')
+                        : NetworkImage(userData.profilePhoto),
+                  ),
+                  accountName: Text(userData.username),
+                  accountEmail: Text(userData.emailAddress),
+                  arrowColor: Colors.white,
+                  onDetailsPressed: () {},
+                  decoration: BoxDecoration(
+                      color: bgColor,
+                      borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(20),
+                          bottomRight: Radius.circular(20))),
+                );
+              },
             ),
             DrawerItem(
-              icon: Icons.person_outline_outlined,
-              text: 'Profile',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        ProfileView(userId: _auth.currentUser.uid.toString())),
-              ),
-            ),
+                icon: Icons.person_outline_outlined,
+                text: 'Profile',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            ProfileView(userId: currentUserId())),
+                  );
+                }),
             DrawerItem(
-              icon: Icons.chat_outlined,
-              text: 'Chat',
+              icon: Icons.people,
+              text: 'Search Community',
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => SavedCollectionView()),
@@ -790,8 +811,8 @@ class _HomeScreenState extends State<HomeScreen> {
             DrawerItem(
               icon: Icons.add_alert_outlined,
               text: 'Notifications',
-              onTap: () =>
-                  Navigator.pushReplacementNamed(context, '/notifications'),
+              // onTap: () =>
+              //     Navigator.pushReplacementNamed(context, '/notifications'),
             ),
             DrawerItem(
               icon: Icons.settings_outlined,
