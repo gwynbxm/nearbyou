@@ -6,11 +6,17 @@
 
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:nearbyou/models/route_marker_model.dart';
+import 'package:nearbyou/models/route_post_model.dart';
+import 'package:nearbyou/models/user_profile_model.dart';
+import 'package:nearbyou/utilities/constants/constants.dart';
+import 'package:nearbyou/utilities/services/firebase_services/firestore.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
 import 'package:nearbyou/utilities/ui/components/image_full_view.dart';
 import 'package:nearbyou/views/home/components/home_carousel_widget.dart';
+import 'package:nearbyou/views/posting/post_view.dart';
 
 class RouteMarkerWidget extends StatefulWidget {
   final RouteMarker marker;
@@ -22,9 +28,51 @@ class RouteMarkerWidget extends StatefulWidget {
 }
 
 class _RouteMarkerWidgetState extends State<RouteMarkerWidget> {
-  // find the user details of this marker
+  RoutePost relatedPost;
+  UserData postOwner;
 
-  // check if its only 1 image
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    getRelatedPost();
+  }
+
+//   // find post according to the markerId
+  getRelatedPost() async {
+    setState(() {
+      isLoading = true;
+    });
+    final result = await DatabaseServices.getAllPosts();
+    final data = result.where((element) =>
+        element.routeMarkerIds.contains(widget.marker.routeMarkerDocID));
+    if (data.length > 0) {
+      setState(() {
+        isLoading = false;
+        relatedPost = data.first;
+      });
+    }
+    getOwner(relatedPost.createdBy);
+  }
+
+// find the user details of this marker according to post
+  getOwner(String creator) async {
+    setState(() {
+      isLoading = true;
+    });
+    if (relatedPost != null) {
+      DocumentSnapshot snap = await profileCollection.doc(creator).get();
+
+      UserData user = UserData.fromDocument(snap);
+      setState(() {
+        isLoading = false;
+        postOwner = user;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,16 +84,21 @@ class _RouteMarkerWidgetState extends State<RouteMarkerWidget> {
             ListTile(
               leading: CircleAvatar(
                 radius: 24,
-                // backgroundImage: _auth.currentUser.photoURL.isEmpty ?? true
-                //     ? AssetImage('assets/images/default-profile.png')
-                //     : NetworkImage(_auth.currentUser.photoURL),
+                backgroundImage: postOwner?.profilePhoto?.isEmpty ?? true
+                    ? AssetImage('assets/images/default-profile.png')
+                    : NetworkImage(postOwner.profilePhoto),
               ),
-              title: Text(
-                // _auth.currentUser.displayName,
-                'name',
-                style: TextStyle(
-                    fontSize: 20, fontWeight: FontWeight.bold, color: bgColor),
-              ),
+              title: postOwner.name == null
+                  ? Text(
+                      postOwner.username,
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    )
+                  : Text(
+                      postOwner.name,
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
               trailing: IconButton(
                 // TODO: implement allow current user to edit post
                 icon: Icon(Icons.more_vert),
@@ -123,7 +176,11 @@ class _RouteMarkerWidgetState extends State<RouteMarkerWidget> {
                         fontSize: 18,
                         fontWeight: FontWeight.bold),
                   ),
-                  onPressed: () {},
+                  onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              PostView(post: relatedPost, owner: postOwner))),
                 )
                 // IconButton(
                 //     icon: Icon(Icons.thumb_up_alt_outlined), onPressed: () {}),

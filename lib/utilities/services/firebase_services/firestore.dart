@@ -106,9 +106,30 @@ class DatabaseServices {
                   location: location);
               allNearbyMarkers.add(value);
             }));
-
-    print("all marker from firestore" + allNearbyMarkers.length.toString());
     return allNearbyMarkers;
+  }
+
+  static Future<List<RoutePost>> getAllPosts() async {
+    List<RoutePost> allPosts = [];
+    await postCollection.get().then((value) => value.docs.forEach((element) {
+          String id = element['postId'];
+          List<String> ids = List<String>.from(element['routeMarkers']);
+          String owner = element['createdBy'];
+          Timestamp time = element['dateTimePosted'];
+          String desc = element['description'];
+
+          RoutePost value = RoutePost(
+            routePostId: id,
+            routeMarkerIds: ids,
+            createdBy: owner,
+            dateTimePosted: time,
+            description: desc,
+          );
+
+          allPosts.add(value);
+          print(allPosts.length);
+        }));
+    return allPosts;
   }
 
   //geoflutterfire package does not work

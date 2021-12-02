@@ -196,7 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       _getDetailsFromCoordinates(position.latitude, position.longitude);
-      _onAddMarker(currPosition);
+      // _onAddMarker(currPosition);
       animateCamera(currPosition);
       getNearbyPlaces(currPosition);
     });
@@ -221,6 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _placeName = placesDetails.placeName;
         _placeAdd = placesDetails.placeAddress;
         _getPlacesDetailsFromSearch(placesDetails);
+        //TODO: if searched places have a marker on the map, display route marker as well!
       });
     }
   }
@@ -338,7 +339,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final dataA = data.where((element) =>
           element.location.longitude >= btmLeftLng &&
           element.location.longitude <= btmRightLng);
-      print(dataA.length);
+      // print(dataA.length);
       if (dataA.length > 0) {
         dataA.forEach((element) {
           addNearestMarker(element);
@@ -352,7 +353,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final Marker tappedMarker = _markers[markerId];
     if (tappedMarker != null) {
       setState(() {
-        isNearestMarkerTapped = true;
+        // isNearestMarkerTapped = true;
         final MarkerId previousMarkerId = selectedMarker;
         if (previousMarkerId != null &&
             _markers.containsKey(previousMarkerId)) {
@@ -729,7 +730,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return GoogleMap(
       onMapCreated: _onMapCreated,
       myLocationButtonEnabled: false,
-      myLocationEnabled: false,
+      myLocationEnabled: true,
       // shows user location
       zoomGesturesEnabled: true,
       zoomControlsEnabled: false,
