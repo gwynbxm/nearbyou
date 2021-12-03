@@ -3,11 +3,6 @@
  * Copyright (c) 2021. All rights reserved.
  * Last modified 14/7/21 5:58 PM
  */
-
-import 'dart:convert';
-import 'dart:io';
-
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -20,12 +15,9 @@ import 'package:nearbyou/utilities/services/firebase_services/firestore.dart';
 import 'package:nearbyou/utilities/ui/components/custom_dialog_box.dart';
 import 'package:nearbyou/utilities/ui/components/profile_button.dart';
 import 'package:nearbyou/utilities/ui/components/progress_icon.dart';
-import 'package:nearbyou/utilities/ui/components/rounded_button.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_icon_button.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
-import 'package:nearbyou/utilities/ui/components/image_full_view.dart';
 import 'package:nearbyou/views/posting/add_post_view.dart';
-import 'package:nearbyou/views/home/home_view.dart';
 import 'package:nearbyou/views/profile/user_edit_profile_view.dart';
 
 import 'components/divider_widget.dart';
@@ -243,36 +235,6 @@ class _ProfileViewState extends State<ProfileView> {
                 ],
               ),
             ),
-//             Center(
-//               child: Column(
-//                 children: [
-//                   Text(
-//                     _auth.currentUser.displayName,
-//                     style: TextStyle(
-//                       fontWeight: FontWeight.bold,
-//                       fontSize: 28,
-//                     ),
-//                   ),
-//                   Text(
-//                     '@' + userData.username,
-//                     style: TextStyle(
-//                       fontSize: 20,
-//                     ),
-//                   ),
-//                   SizedBox(
-//                     height: 10,
-//                   ),
-//                   Text(
-//                     userData.biography,
-//                     style: TextStyle(
-//                       fontStyle: FontStyle.italic,
-//                       fontSize: 15,
-//                     ),
-//                   ),
-//                 ],
-//               ),
-// >>>>>>> 347ba64752c7ed248ed41bad57690e79dc0010c0
-//             ),
             const SizedBox(
               height: 10,
             ),
@@ -342,26 +304,6 @@ class _ProfileViewState extends State<ProfileView> {
       );
     }
   }
-
-  // Container buildButton(
-  //     {String text, Color bgColor, Color textColor, Function onPressed}) {
-  //   return Container(
-  //     child: ClipRRect(
-  //       borderRadius: BorderRadius.circular(15),
-  //       child: ElevatedButton(
-  //         style: ElevatedButton.styleFrom(
-  //           primary: isFollowing ? primaryColor : Colors.grey,
-  //           padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
-  //         ),
-  //         onPressed: () => onPressed,
-  //         child: Text(
-  //           text,
-  //           style: TextStyle(color: Colors.white),
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
 
   buildProfilePosts() {
     if (isLoading) {

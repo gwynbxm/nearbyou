@@ -5,18 +5,19 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:nearbyou/utilities/ui/palette.dart';
 
 class ProfileNoButton extends StatelessWidget {
   final int value;
   final String text;
-  const ProfileNoButton({Key key, this.value, this.text}) : super(key: key);
+  final VoidCallback onPressed;
+  const ProfileNoButton({Key key, this.value, this.text, this.onPressed})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialButton(
       // padding: EdgeInsets.symmetric(vertical: 4),
-      onPressed: () {},
+      onPressed: onPressed,
       child: Column(
         children: [
           Text(
