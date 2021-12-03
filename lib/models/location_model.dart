@@ -3,7 +3,6 @@
  * Copyright (c) 2021. All rights reserved.
  * Last modified 19/7/21 1:05 PM
  */
-import 'dart:convert';
 
 class LocationData {
   final double lat;
@@ -13,6 +12,11 @@ class LocationData {
     this.lat,
     this.lng,
   });
+
+  Map<String, dynamic> toMap() => {
+        'lat': lat,
+        'lng': lng,
+      };
 
   factory LocationData.fromMap(Map<dynamic, dynamic> json) {
     return LocationData(

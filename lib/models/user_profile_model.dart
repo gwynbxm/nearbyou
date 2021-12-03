@@ -5,27 +5,20 @@
  */
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:nearbyou/models/route_post_model.dart';
 
 class UserData {
-  // String userId;
   String name;
   String username;
   String emailAddress;
   String profilePhoto;
   String biography;
-  // List<UserData> friends;
-  // List<RoutePost> savedPosts;
 
   UserData({
-    // this.userId,
     this.username,
     this.name,
     this.emailAddress,
     this.profilePhoto,
     this.biography,
-    // this.friends,
-    // this.savedPosts,
   });
 
   UserData.withoutEmail(
@@ -34,14 +27,6 @@ class UserData {
     this.biography,
     this.profilePhoto,
   );
-
-  // factory UserData.fromMap(Map<String, dynamic> json) => new UserData(
-  //       // userId: json["id"],
-  //       username: json["username"],
-  //       name: json["name"],
-  //       profilePhoto: json["profilePhoto"],
-  //       biography: json["biography"],
-  //     );
 
   factory UserData.fromMap(Map<String, dynamic> json) {
     return UserData(
@@ -53,7 +38,6 @@ class UserData {
   }
 
   Map<String, dynamic> signUpToJson() => {
-        // 'email': emailAddress,
         'username': username,
         'profilePhoto': profilePhoto,
         'emailAddress': emailAddress,

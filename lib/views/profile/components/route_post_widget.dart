@@ -3,34 +3,21 @@
  * Copyright (c) 2021. All rights reserved.
  * Last modified 1/11/21 10:46 AM
  */
-
-import 'dart:convert';
-
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nearbyou/models/route_marker_model.dart';
 import 'package:nearbyou/models/route_post_model.dart';
 import 'package:nearbyou/models/user_profile_model.dart';
 import 'package:nearbyou/utilities/constants/constants.dart';
-import 'package:nearbyou/utilities/services/firebase_services/firestore.dart';
-import 'package:nearbyou/utilities/ui/components/custom_dialog_box.dart';
-import 'package:nearbyou/utilities/ui/components/progress_icon.dart';
-import 'package:nearbyou/utilities/ui/components/image_full_view.dart';
-import 'package:nearbyou/utilities/ui/palette.dart';
 import 'package:nearbyou/views/comment/comment_view.dart';
 import 'package:nearbyou/utilities/ui/components/carousel_widget.dart';
 import 'package:timeago/timeago.dart' as timeAgo;
 
 class RoutePostWidget extends StatefulWidget {
-  // final User user;
-  // final UserData userData;
   final UserData user;
   final RoutePost post;
   final VoidCallback onDelete;
 
-  // const RoutePostWidget(this.userData, this.post);
   const RoutePostWidget(this.user, this.post, {this.onDelete});
 
   @override
@@ -84,14 +71,7 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
               backgroundImage: widget.user?.profilePhoto?.isEmpty ?? true
                   ? AssetImage('assets/images/default-profile.png')
                   : NetworkImage(widget.user.profilePhoto),
-              // backgroundImage: widget.user.profilePhoto.isEmpty ?? true
-              //     ? AssetImage('assets/images/default-profile.png')
-              //     : NetworkImage(widget.user.profilePhoto),
             ),
-            // title: Text(
-            //   widget.user.name,
-            //   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            // ),
             title: widget.user.name == null
                 ? Text(
                     widget.user.username,
@@ -134,7 +114,6 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
                   _onSelectedItem = value;
                 });
               },
-              //  onPressed: () {},
             ),
           ),
           // buildPostContent(post),
@@ -165,28 +144,6 @@ class _RoutePostWidgetState extends State<RoutePostWidget> {
                   ),
                 )
               : CarouselWidget(postMarkers),
-          // CarouselSlider(
-          //     items: images.map((url) {
-          //       return Container(
-          //         width: MediaQuery.of(context).size.width,
-          //         margin: EdgeInsets.symmetric(horizontal: 5.0),
-          //         child: GestureDetector(
-          //           child: new Image.memory(
-          //             base64Decode(url),
-          //             fit: BoxFit.cover,
-          //           ),
-          //           // Image(
-          //           // image: File(url),
-          //           // fit: BoxFit.cover,
-          //           // ),
-          //           onTap: () => Navigator.push(
-          //               context,
-          //               MaterialPageRoute(
-          //                   builder: (context) => ImageFullView(url))),
-          //         ),
-          //       );
-          //     }).toList(),
-          //     options: CarouselOptions(autoPlay: false)),
           ButtonBar(
             alignment: MainAxisAlignment.spaceEvenly,
             children: [

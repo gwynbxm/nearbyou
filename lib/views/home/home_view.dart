@@ -29,7 +29,6 @@ import 'package:nearbyou/utilities/services/firebase_services/firestore.dart';
 import 'package:nearbyou/utilities/ui/components/panel_widget.dart';
 import 'package:nearbyou/utilities/ui/components/rounded_icon_button.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
-import 'package:nearbyou/views/collections/saved_collection_view.dart';
 import 'package:nearbyou/views/home/components/route_marker_widget.dart';
 import 'package:nearbyou/views/posting/add_post_view.dart';
 import 'package:nearbyou/views/home/components/address_search.dart';
@@ -260,17 +259,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   _getDetailsFromCoordinates(double lat, double lng) async {
-    // double lat = point.latitude;
-    // double lng = point.longitude;
-
     final coordinates = geocoder.Coordinates(lat, lng);
-    // Coordinates coordinates = Coordinates(lat, lng);
 
     var address =
         await geocoder.Geocoder.local.findAddressesFromCoordinates(coordinates);
 
     setState(() {
-      // TODO: feature name retrieved from geocoder is different from google places
       _placeName = address.first.featureName;
       _placeAdd = address.first.addressLine;
       _searchCon.text = address.first.featureName;
@@ -506,83 +500,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Container buildInformation(BuildContext context) {
     return isLocationSelected
-        ?
-        // Column(
-        //         mainAxisSize: MainAxisSize.min,
-        //         children: [
-        //           Wrap(
-        //             children: [
-        //               Row(
-        //                 children: [
-        //                   Expanded(
-        //                     flex: 3,
-        //                     child: Padding(
-        //                         padding:
-        //                             EdgeInsets.only(top: 10, left: 30, right: 30),
-        //                         child: SingleChildScrollView(
-        //                           child: Column(
-        //                             children: [
-        //                               Align(
-        //                                 alignment: Alignment.centerLeft,
-        //                                 child: Text(
-        //                                   '$_placeName',
-        //                                   style: TextStyle(
-        //                                     fontWeight: FontWeight.bold,
-        //                                     fontSize: 24,
-        //                                   ),
-        //                                 ),
-        //                               ),
-        //                               SizedBox(
-        //                                 height: 10,
-        //                               ),
-        //                               Align(
-        //                                 alignment: Alignment.centerLeft,
-        //                                 child: Text(
-        //                                   '$_placeAdd',
-        //                                   style: TextStyle(fontSize: 15),
-        //                                 ),
-        //                               ),
-        //                             ],
-        //                           ),
-        //                         )),
-        //                   ),
-        //                   buildPostButton(context),
-        //                 ],
-        //               ),
-        //             ],
-        //           ),
-        //           SizedBox(
-        //             width: 15,
-        //             height: 15,
-        //           ),
-        //           Divider(
-        //             thickness: 1,
-        //             indent: 30,
-        //             endIndent: 30,
-        //           ),
-        //           SizedBox(
-        //             width: 15,
-        //             height: 15,
-        //           ),
-        //           Flexible(
-        //             child: Container(
-        //                 //place timeline of post
-        //                 // child: StreamBuilder<QuerySnapshot>(
-        //                 //   stream: DatabaseServices.getNearbyMarkers(),
-        //                 //   builder: (context, snapshot) {
-        //                 //     if (!snapshot.hasData) {
-        //                 //       return Container(
-        //                 //           alignment: FractionalOffset.center,
-        //                 //           child: CircularProgressIndicator());
-        //                 //     }
-        //                 //     return Container();
-        //                 //   },
-        //                 // ),
-        //                 ),
-        //           )
-        //         ],
-        //       )
-        Container(
+        ? Container(
             child: Stack(
               children: [
                 Container(
@@ -632,7 +550,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                   relatedNearbyMarkerList[index]);
                             },
                           ),
-                          // buildRouteInfo(context),
                         ),
                       )
                     : Container(
@@ -784,16 +701,6 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             DrawerItem(
-              // icon: Icons.person_outline_outlined,
-              // text: 'Profile',
-              // onTap: () {
-              //   Navigator.push(
-              //     context,
-              //     MaterialPageRoute(
-              //         builder: (context) =>
-              //             ProfileView(userId: currentUserId())),
-              //   );
-              // }),
               icon: Icons.person_outline_outlined,
               text: 'Profile',
               onTap: () => Navigator.push(
@@ -802,15 +709,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     builder: (context) =>
                         ProfileView(profileId: _auth.currentUser.uid)),
               ),
-            ),
-            DrawerItem(
-              icon: Icons.people,
-              text: 'Search Community',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => SavedCollectionView()),
-              ),
-              // Navigator.pushReplacementNamed(context, '/collections'),
             ),
             Divider(
               height: 20,

@@ -5,7 +5,6 @@
  */
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:geoflutterfire/geoflutterfire.dart';
 
 class RouteCoordinates {
   String geoHash;

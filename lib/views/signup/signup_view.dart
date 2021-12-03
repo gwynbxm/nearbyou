@@ -18,7 +18,6 @@ import 'package:nearbyou/utilities/ui/components/social_rounded_button.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
 import 'package:nearbyou/views/home/home_view.dart';
 import 'package:nearbyou/views/signin/signin_view.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SignUpView extends StatelessWidget {
   const SignUpView({Key key}) : super(key: key);
@@ -181,37 +180,6 @@ class _SignUpState extends State<SignUp> {
           );
         },
       );
-      // showDialog(
-      //     context: context,
-      //     builder: (context) {
-      //       return AlertDialog(
-      //         title: Text("Enter username"),
-      //         content: ,
-      //         actions: [
-      //           TextButton(
-      //             child: Text("SUBMIT"),
-      //             onPressed: () async {
-      //               UserData userProfile = UserData(
-      //                   username: _usernameCon.text,
-      //                   profilePhoto: result.photoURL.toString());
-      //               await DatabaseServices.addUser(result.uid, userProfile);
-      //
-      //               Navigator.push(
-      //                 context,
-      //                 MaterialPageRoute(builder: (context) => HomeScreen()),
-      //               );
-      //             },
-      //           ),
-      //           TextButton(
-      //             child: Text("SKIP"),
-      //             onPressed: () => Navigator.push(
-      //               context,
-      //               MaterialPageRoute(builder: (context) => HomeScreen()),
-      //             ),
-      //           ),
-      //         ],
-      //       );
-      //     });
     }
   }
 
@@ -312,13 +280,6 @@ class _SignUpState extends State<SignUp> {
                           textColor: Colors.black,
                         ),
                         SizedBox(height: 15.0),
-                        // CheckSignInOrSignUp(
-                        //   onTap: () => Navigator.push(
-                        //       context,
-                        //       new MaterialPageRoute(
-                        //           builder: (context) => new LoginView())),
-                        // )
-
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

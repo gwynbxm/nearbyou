@@ -10,20 +10,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nearbyou/models/route_coordinates_model.dart';
 
-import 'location_model.dart';
-
 class RouteMarker {
   String routeMarkerDocID;
   String markerID;
   String title;
   String caption;
   List<String> imageList;
-  // GeoPoint coordinates;
-
   RouteCoordinates coordinates;
-
-  // GeoFirePoint coordinates;
-
   LatLng location;
   int routeOrder;
 
@@ -39,7 +32,6 @@ class RouteMarker {
   });
 
   RouteMarker.withoutData(
-    // this.coordinates,
     this.coordinates,
   );
 
@@ -50,13 +42,6 @@ class RouteMarker {
         'caption': caption ?? '',
         'imageList': imageList ?? '',
         'position': coordinates.toMap(),
-        // 'position': coordinates.data,
-        // 'coordinates': coordinates.toJson(),
-        // 'coordinates': {
-        //   'geoHash': coordinates.hash,
-        //   'geoPoint': coordinates.geoPoint,
-        // },
-        // 'coordinates': coordinates,
         'location': location.toJson(),
         'routeOrder': routeOrder,
       };
@@ -70,8 +55,6 @@ class RouteMarker {
       caption: json['caption'] ?? '',
       imageList: List<String>.from(json['imageList']).toList(),
       coordinates: RouteCoordinates.fromMap(json['position']),
-      // coordinates: json['coordinates'],
-      // coordinates: json['position'],
       location: LatLng.fromJson(json['location']),
       routeOrder: json['routeOrder'],
     );

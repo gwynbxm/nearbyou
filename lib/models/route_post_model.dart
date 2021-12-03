@@ -14,12 +14,7 @@ class RoutePost {
   final String routePostId;
   final String description;
   final List<String> routeMarkerIds;
-  // final List<RouteMarker> routeMarkers;
   final String createdBy;
-  // final int likeCount;
-  // final List<PostComment> comments;
-  // final bool isLiked;
-  // final bool isSaved;
   final Timestamp dateTimePosted;
 
   RoutePost({
@@ -27,16 +22,11 @@ class RoutePost {
     this.description,
     this.routeMarkerIds,
     this.createdBy,
-    // this.likeCount,
-    // this.comments,
-    // this.isLiked,
-    // this.isSaved,
     this.dateTimePosted,
   });
 
   Map<String, dynamic> toMap() => {
         'description': description ?? '',
-        // 'routeMarkers': routeMarkers.map((e) => e.toMap()).toList(),
         'routeMarkers': routeMarkerIds ?? '',
         'createdBy': createdBy,
         'dateTimePosted': dateTimePosted,
@@ -46,7 +36,6 @@ class RoutePost {
     return RoutePost(
       routePostId: json['postId'],
       description: json['description'] ?? '',
-      // routeMarkers: json['routeMarkers'],
       routeMarkerIds: List<String>.from(json['routeMarkers']).toList(),
       createdBy: json['createdBy'],
       dateTimePosted: json['dateTimePosted'],

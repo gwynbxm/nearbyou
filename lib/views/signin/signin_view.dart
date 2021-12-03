@@ -7,7 +7,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nearbyou/models/user_profile_model.dart';
 import 'package:nearbyou/utilities/helper/validator.dart';
 import 'package:nearbyou/utilities/services/firebase_services/authentication.dart';
@@ -19,7 +18,6 @@ import 'package:nearbyou/utilities/ui/components/rounded_pwd_field.dart';
 import 'package:nearbyou/utilities/ui/components/social_rounded_button.dart';
 import 'package:nearbyou/utilities/ui/palette.dart';
 import 'package:nearbyou/views/home/home_view.dart';
-import 'package:nearbyou/views/preferences/preferences_view.dart';
 import 'package:nearbyou/views/signup/signup_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -92,10 +90,6 @@ class _SignInAuthState extends State<SignInAuth> {
       } else {
         _showVerifyEmailDialog();
       }
-      // } on PlatformException catch (e) {
-      //   _showErrorMsg(ErrorMsg.signInError(e.code));
-      //   throw (e);
-      // }
     } else {
       print('Form is invalid');
     }
@@ -313,12 +307,6 @@ class _SignInAuthState extends State<SignInAuth> {
                           textColor: Colors.black,
                         ),
                         SizedBox(height: 15.0),
-                        // CheckSignInOrSignUp(
-                        //   onTap: () => Navigator.push(
-                        //       context,
-                        //       new MaterialPageRoute(
-                        //           builder: (context) => new RegisterView())),
-                        // ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
