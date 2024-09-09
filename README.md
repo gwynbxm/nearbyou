@@ -6,7 +6,8 @@
 <summary> Table of Contents </summary>
 <ol>
   <li><a href="#general-information">General Information</a></li>
-  <li><a href="#screenshots">Design</a></li>
+  <li><a href="#technologies">Technologies</a></li>
+  <li><a href="#design">Design</a></li>
   <li><a href="#documents">Documents</a></li>
 </ol>
 </details>
